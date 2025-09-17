@@ -41,16 +41,17 @@ public class PIDDemo extends LinearOpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         graphM = PanelsGraph.INSTANCE.getManager();
         waitForStart();
+        //test pull
         while(opModeIsActive()){
             targetVel = Math.min(Math.max(0,targetVel),1000);
             motor.setVelocityPIDFCoefficients(P,I,D,F);
             motor.setVelocity(targetVel);
 
             telemetryM.debug("target" + targetVel);
-            telemetryM.debug("position" + motor.getCurrentPosition());
+            telemetryM.debug("position" + motor.getVelocity());
             telemetryM.debug("power" + motor.getPower());
             graphM.addData("target",targetVel);
-            graphM.addData("position",motor.getCurrentPosition());
+            graphM.addData("position",motor.getVelocity());
             graphM.addData("power",motor.getPower());
             graphM.update();
             telemetryM.update(telemetry);
