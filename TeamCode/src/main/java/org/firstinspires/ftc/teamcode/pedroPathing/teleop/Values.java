@@ -9,10 +9,10 @@ public final class Values {
 
     public static final class flywheelConstants {
         public static final PIDFController flywheelPIDF = new PIDFController(0, 0, 0, 0);
-        public static double fP = 0.1;
+        public static double fP = 0.01;
         public static double fI = 0;
-        public static double fD = 0;
-        public static double fK = 0.0045;
+        public static double fD = 0.00005;
+        public static double fK = 0.000445;
 
         public static double flywheelVelocity;
     }

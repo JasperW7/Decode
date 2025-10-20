@@ -72,6 +72,7 @@ public class Methods {
     }
 
     public DetectedColor getDetectedColor(RevColorSensorV3 colorSensor, Telemetry telemetry){
+
         NormalizedRGBA colors= colorSensor.getNormalizedColors();
 
         float normRed, normGreen, normBlue;
@@ -79,11 +80,15 @@ public class Methods {
         normGreen = colors.green/colors.alpha;
         normBlue = colors.blue/colors.alpha;
 
+
         /**
          *red, green, blue
          * GREEN =
          * PURPLE =
          */
+        telemetry.addData("red",normRed);
+        telemetry.addData("green",normGreen);
+        telemetry.addData("blue",normBlue);
 
         if (normRed>0 && normGreen>0 && normBlue>0){ //swap with purple range
             return DetectedColor.PURPLE; //purple
@@ -127,6 +132,19 @@ public class Methods {
         return interpolateVelocity(distance);
 
     }
+
+//    public double[] relocalize(Limelight3A ll){
+//        return [x,y,heading];
+//    }
+
+    //sigma was here
+
+    //TODO: update lerp table for distance
+    //TODO: find distance using limelight
+    //TODO: relocalize with limelight
+    //TODO: turret tracking using trig
+    //TODO: find color ranges
+
 
 
 

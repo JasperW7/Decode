@@ -111,7 +111,8 @@ public class Teleop extends OpMode {
 
                 break;
             case OUTTAKING:
-                methods.velocityPID(robot.flywheel,methods.calculateVelocity(robot.limelight),"flywheel");
+                //methods.velocityPID(robot.flywheel,methods.calculateVelocity(robot.limelight),"flywheel");
+                methods.velocityPID(robot.flywheel,2000,"flywheel");
                 break;
 
         }
@@ -122,7 +123,7 @@ public class Teleop extends OpMode {
             robot.intake.setPower(0);
         }
 
-
+        //turret trig calc
         double x = follower.getPose().getX();
         double y = follower.getPose().getY();
         double heading = follower.getPose().getHeading();

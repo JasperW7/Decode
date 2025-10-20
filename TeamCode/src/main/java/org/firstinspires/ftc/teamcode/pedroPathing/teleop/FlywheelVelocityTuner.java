@@ -8,15 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.arcrobotics.ftclib.controller.PIDFController;
 
 @Config
 @TeleOp(name = "FlywheelVelocityTuner", group = "Tuning")
 public class FlywheelVelocityTuner extends LinearOpMode {
 
-
-    public static double kS = 0.0;
-    public static double kV = 0.001;
-    public static double kA = 0.0;
+    public static double kF = 0.001;
     public static double kP = 0.002;
     public static double kI = 0.0;
     public static double kD = 0.0;
@@ -26,6 +24,7 @@ public class FlywheelVelocityTuner extends LinearOpMode {
 
     private DcMotorEx flywheel;
     private FtcDashboard dashboard = FtcDashboard.getInstance();
+    private PIDFController controller = new PIDFController(0,0,0,0);
 
     // PID state
     private double integral = 0;
@@ -34,7 +33,7 @@ public class FlywheelVelocityTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        flywheel = hardwareMap.get(DcMotorEx.class, "motor");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -45,48 +44,21 @@ public class FlywheelVelocityTuner extends LinearOpMode {
         waitForStart();
         timer.reset();
 
-        double lastVelocity = 0;
 
         while (opModeIsActive()) {
-            double dt = timer.seconds();
-            timer.reset();
 
             double velocity = flywheel.getVelocity();
-
-            double acceleration = (velocity - lastVelocity) / dt;
-            lastVelocity = velocity;
-
-            double ff = kS * Math.signum(targetVelocity)
-                    + kV * targetVelocity
-                    + kA * acceleration;
-
-            double error = targetVelocity - velocity;
-            integral += error * dt;
-            double derivative = (error - lastError) / dt;
-            lastError = error;
-
-            double feedback = kP * error + kI * integral + kD * derivative;
-
-            double power = (ff + feedback) / 12.0;
-            power = Math.max(-1, Math.min(1, power));
-
-            flywheel.setPower(power);
-
+            controller.setPIDF(kP,kI,kD,kF);
+            flywheel.setPower(controller.calculate(velocity,targetVelocity));
             // --- Dashboard telemetry ---
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("TargetVelocity", targetVelocity);
             packet.put("MeasuredVelocity", velocity);
-            packet.put("Error", error);
-            packet.put("Feedforward", ff);
-            packet.put("Feedback", feedback);
-            packet.put("PowerCmd", power);
             dashboard.sendTelemetryPacket(packet);
 
             // --- Driver station telemetry ---
             telemetry.addData("Target", targetVelocity);
             telemetry.addData("Velocity", velocity);
-            telemetry.addData("Power", power);
-            telemetry.addData("Error", error);
             telemetry.update();
         }
 
