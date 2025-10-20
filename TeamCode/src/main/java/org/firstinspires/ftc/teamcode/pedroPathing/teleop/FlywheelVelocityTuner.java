@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teleop;
+package org.firstinspires.ftc.teamcode.pedroPathing.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -51,19 +51,15 @@ public class FlywheelVelocityTuner extends LinearOpMode {
             double dt = timer.seconds();
             timer.reset();
 
-            // Read current velocity (ticks per second)
             double velocity = flywheel.getVelocity();
 
-            // Calculate acceleration
             double acceleration = (velocity - lastVelocity) / dt;
             lastVelocity = velocity;
 
-            // --- Feedforward ---
             double ff = kS * Math.signum(targetVelocity)
                     + kV * targetVelocity
                     + kA * acceleration;
 
-            // --- PID ---
             double error = targetVelocity - velocity;
             integral += error * dt;
             double derivative = (error - lastError) / dt;
@@ -71,8 +67,7 @@ public class FlywheelVelocityTuner extends LinearOpMode {
 
             double feedback = kP * error + kI * integral + kD * derivative;
 
-            // Combine feedforward + feedback
-            double power = (ff + feedback) / 12.0; // normalize to motor power (-1 to 1)
+            double power = (ff + feedback) / 12.0;
             power = Math.max(-1, Math.min(1, power));
 
             flywheel.setPower(power);
