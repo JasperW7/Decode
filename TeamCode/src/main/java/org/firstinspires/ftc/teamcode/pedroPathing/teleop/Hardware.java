@@ -45,36 +45,37 @@ public class Hardware {
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.FORWARD);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setPower(0);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setPower(0);
 
         spindexer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spindexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         spindexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        spindexer.setDirection(DcMotorSimple.Direction.REVERSE);
         spindexer.setPower(0);
 
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        turret.setDirection(DcMotorSimple.Direction.REVERSE);
         turret.setPower(0);
 
         transfer = hwMap.get(Servo.class,"transfer");
         transferEngage = hwMap.get(Servo.class,"engage");
-        shooterUnder = hwMap.get(Servo.class,"shooter");
-        ejection = hwMap.get(Servo.class,"ejection");
-        kickstand = hwMap.get(Servo.class,"kickstand");
         led = hwMap.get(Servo.class,"led");
+
+        transfer.setPosition(Values.transferBeltStop);
+        transferEngage.setPosition(Values.transferDisengage);
 
         limelight = hwMap.get(Limelight3A.class,"limelight");
         colorSensor = hwMap.get(RevColorSensorV3.class, "colorSensor");
+
 
 
     }

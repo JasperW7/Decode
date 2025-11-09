@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.pedroPathing.teleop;
 
 import static org.firstinspires.ftc.teamcode.pedroPathing.teleop.Values.lerpTable;
 
+import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
+import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,13 +18,15 @@ public class Methods {
 
     public void velocityPID(DcMotorEx motor, double targetVelocity, String mechanismType) {
         PIDFController controller;
-        double kP, kI, kD, kF;
+        double kP, kI, kD, kF, kV, kA;
         switch(mechanismType){
             case "flywheel":
                 kP = Values.flywheelConstants.fP;
                 kI = Values.flywheelConstants.fI;
                 kD = Values.flywheelConstants.fD;
                 kF = Values.flywheelConstants.fK;
+                kV = Values.flywheelConstants.fV;
+                kA = Values.flywheelConstants.fA;
                 controller = Values.flywheelConstants.flywheelPIDF;
                 break;
             case "intake":
@@ -30,6 +34,9 @@ public class Methods {
                 kI = Values.intakeConstants.iI;
                 kD = Values.intakeConstants.iD;
                 kF = Values.intakeConstants.iK;
+                kV = Values.intakeConstants.iV;
+                kA = Values.intakeConstants.iA;
+
                 controller = Values.intakeConstants.intakePIDF;
                 break;
             default:
@@ -42,9 +49,10 @@ public class Methods {
 
     }
 
+
     public void positionPID(DcMotorEx motor, double targetPosition, String mechanismType) {
-        PIDFController controller;
-        double kP, kI, kD, kF;
+        ProfiledPIDController controller;
+        double kP, kI, kD, kF, kV, kA;
 
         switch (mechanismType) {
             case "turret":
@@ -52,6 +60,8 @@ public class Methods {
                 kI = Values.turretConstants.tI;
                 kD = Values.turretConstants.tD;
                 kF = Values.turretConstants.tK;
+                kV = Values.turretConstants.tV;
+                kA = Values.turretConstants.tA;
                 controller = Values.turretConstants.turretPIDF;
                 break;
 
@@ -60,12 +70,15 @@ public class Methods {
                 kI = Values.spindexerConstants.sI;
                 kD = Values.spindexerConstants.sD;
                 kF = Values.spindexerConstants.sK;
+                kV = Values.spindexerConstants.sV;
+                kA = Values.spindexerConstants.sA;
                 controller = Values.spindexerConstants.spindexerPIDF;
                 break;
             default:
                 throw new IllegalArgumentException("Error: " + mechanismType);
         }
-        controller.setPIDF(kP, kI, kD, kF);
+        controller.setPID(kP, kI, kD);
+        controller.setConstraints(new TrapezoidProfile.Constraints(kV,kA));
         double position = motor.getCurrentPosition();
         double power = controller.calculate(position, targetPosition);
         motor.setPower(power);
