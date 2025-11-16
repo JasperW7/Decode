@@ -3,9 +3,13 @@ package org.firstinspires.ftc.teamcode.pedroPathing.teleop;
 import static org.firstinspires.ftc.teamcode.pedroPathing.teleop.Values.lerpTable;
 
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
+import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -15,11 +19,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.Map;
 
 public class Methods {
-
+    private double lastPos = 0;
+    private double lastTime = 0;
+    private boolean firstLoop = true;
     public void velocityPID(DcMotorEx motor, double targetVelocity, String mechanismType) {
         PIDFController controller;
         double kP, kI, kD, kF, kV, kA;
-        switch(mechanismType){
+
+        switch (mechanismType) {
             case "flywheel":
                 kP = Values.flywheelConstants.fP;
                 kI = Values.flywheelConstants.fI;
@@ -29,6 +36,7 @@ public class Methods {
                 kA = Values.flywheelConstants.fA;
                 controller = Values.flywheelConstants.flywheelPIDF;
                 break;
+
             case "intake":
                 kP = Values.intakeConstants.iP;
                 kI = Values.intakeConstants.iI;
@@ -36,18 +44,46 @@ public class Methods {
                 kF = Values.intakeConstants.iK;
                 kV = Values.intakeConstants.iV;
                 kA = Values.intakeConstants.iA;
-
                 controller = Values.intakeConstants.intakePIDF;
                 break;
+
             default:
                 throw new IllegalArgumentException("Error: " + mechanismType);
         }
-        controller.setPIDF(kP,kI,kD,kF);
-        double currentVelocity = motor.getVelocity();
-        double power = controller.calculate(currentVelocity, targetVelocity);
-        motor.setPower(power);
 
+        if (firstLoop) {
+            lastPos = motor.getCurrentPosition();
+            lastTime = System.nanoTime() / 1e9;
+            firstLoop = false;
+            return;
+        }
+
+        // compute delta-position velocity
+        double currentPos = motor.getCurrentPosition();
+        double currentTime = System.nanoTime() / 1e9;
+
+        double dt = currentTime - lastTime;
+        double dp = currentPos - lastPos;
+
+        double measuredVelocity = dp / dt;   // ticks per second
+
+        lastPos = currentPos;
+        lastTime = currentTime;
+
+        if (targetVelocity == 0) {
+            motor.setPower(0);
+            return;
+        }
+
+        controller.setPIDF(kP, kI, kD, kF);
+        double power = controller.calculate(measuredVelocity, targetVelocity);
+        motor.setPower(power);
     }
+    public void resetVelocityPID() {
+        firstLoop = true;
+    }
+
+
 
 
     public void positionPID(DcMotorEx motor, double targetPosition, String mechanismType) {
@@ -83,6 +119,10 @@ public class Methods {
         double power = controller.calculate(position, targetPosition);
         motor.setPower(power);
     }
+    public void resetProfiledPID(ProfiledPIDController controller, DcMotorEx motor) {
+        controller.reset(new TrapezoidProfile.State(motor.getCurrentPosition(), 0));
+    }
+
 
     public DetectedColor getDetectedColor(RevColorSensorV3 colorSensor, Telemetry telemetry){
 
@@ -145,6 +185,33 @@ public class Methods {
         return interpolateVelocity(distance);
 
     }
+
+    public double turretAutoTrack(Pose botPose) {
+        double dy,dx;
+        if (Values.team.equals("blue")) {
+            dx = botPose.getX() - 12.5;
+            dy = 137.3 - botPose.getY();
+        }else{
+            dx = 131.5-botPose.getX();
+            dy= 137.3-botPose.getY();
+        }
+        double theta = 180 - Math.toDegrees(botPose.getHeading())
+                - Math.toDegrees(Math.atan2(dy, dx));
+        double ticks = 55 * theta / 9;
+        double wrapped = ((ticks + 1100) % 2200);
+        if (wrapped < 0) wrapped += 2200;
+        wrapped -= 1100;
+        return wrapped;
+    }
+
+    public void manualRelocalize(Follower follower){
+        if (Values.team.equals("red")) {
+            follower.setPose(new Pose(9.5, 9.5, Math.toRadians(90)));
+        }else{
+            follower.setPose(new Pose(134.5,9.5,Math.toRadians(90)));
+        }
+    }
+
 
 //    public double[] relocalize(Limelight3A ll){
 //        return [x,y,heading];

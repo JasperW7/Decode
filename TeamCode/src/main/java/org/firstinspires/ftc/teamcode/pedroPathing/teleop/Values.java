@@ -10,7 +10,7 @@ import java.util.TreeMap;
 @Config
 public final class Values {
 
-    @Config
+
     public static final class flywheelConstants {
         public static final PIDFController flywheelPIDF = new PIDFController(0, 0, 0, 0);
         public static double fP = 0.01;
@@ -23,7 +23,6 @@ public final class Values {
         public static double flywheelVelocity=1800;
     }
 
-    @Config
     public static final class intakeConstants {
         public static final PIDFController intakePIDF = new PIDFController(0, 0, 0, 0);
         public static double iP = 0.0005;
@@ -36,31 +35,30 @@ public final class Values {
         public static double intakeVelocity = 500;
     }
 
-    @Config
+
     public static final class spindexerConstants {
         public static final ProfiledPIDController spindexerPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
         public static double sP = 0.01;
-        public static double sI = 0.12;
-        public static double sD = 0.001;
+        public static double sI = 0.13;
+        public static double sD = 0.0003;
         public static double sK = 0;
-        public static double sV = 3000;
-        public static double sA = 2000;
+        public static double sV =3000;
+        public static double sA = 1000;
         public static double spindexerPosition=0;
-        public static double spindexerStart = 0, spindexerGreen=20, spindexerPurple1=150, spindexerPurple2=275, spindexerMid1 = 80,spindexerMid2 = 210, spindexerMid3 = 340;
-        public static double[]indexer = new double[] {spindexerGreen,spindexerMid1,spindexerPurple1,spindexerMid2,spindexerPurple2,spindexerMid3};
+        public static final double spindexerStart = 0, spindexerGreen=100, spindexerPurple1=230, spindexerPurple2=357, spindexerGreenTransfer = 25,spindexerPurpleTransfer1 = 164, spindexerPurpleTransfer3 = 290;
+        public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
         public static int index = 0;
-        public static boolean override = false;
     }
 
-    @Config
+
     public static final class turretConstants {
         public static final ProfiledPIDController turretPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
         public static double tP = 0.006;
         public static double tI = 0.12;
         public static double tD = 0.0003;
         public static double tK = 0;
-        public static double tV = 5000;
-        public static double tA = 5000;
+        public static double tV = 8000;
+        public static double tA = 6000;
         public static double turretPosition=0;
 
         public static double turretMin = -1100, turretStart = 0,turretMax = 1100;
@@ -92,10 +90,17 @@ public final class Values {
             )
     );
     public static String motif;
+    public static String team;
     public static double transferBeltStart = 1, transferBeltStop = 0.5, transferBeltMid = 0.8;
-    public static double transferDisengage=0.25, transferEngage=0.6, transferKick=1;
+    public static double transferDisengage=0.35, transferEngage=0.6, transferKick=0.88;
+
+
+    public static double engageTarget = 0.0;   // where we WANT it to go
+    public static double engageStep = 0.002;   // how much to move per loop
+    public static double engagePos = 0.0;      // TRACKED servo position
 
     public static boolean intaking = false;
+    public static boolean init = true;
     public static int engaged = 0;
 
 }
