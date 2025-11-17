@@ -45,7 +45,7 @@ public final class Values {
         public static double sV =3000;
         public static double sA = 1000;
         public static double spindexerPosition=0;
-        public static final double spindexerStart = 0, spindexerGreen=100, spindexerPurple1=230, spindexerPurple2=357, spindexerGreenTransfer = 25,spindexerPurpleTransfer1 = 164, spindexerPurpleTransfer3 = 290;
+        public static final double spindexerStart = 0, spindexerGreen=100, spindexerPurple1=230, spindexerPurple2=357, spindexerGreenTransfer = 290,spindexerPurpleTransfer1 = 25, spindexerPurpleTransfer3 = 164;
         public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
         public static int index = 0;
     }
@@ -57,8 +57,8 @@ public final class Values {
         public static double tI = 0.12;
         public static double tD = 0.0003;
         public static double tK = 0;
-        public static double tV = 8000;
-        public static double tA = 6000;
+        public static double tV = 0;
+        public static double tA = 0;
         public static double turretPosition=0;
 
         public static double turretMin = -1100, turretStart = 0,turretMax = 1100;
@@ -89,17 +89,22 @@ public final class Values {
                     Map.entry(4.7, 2000)
             )
     );
-    public static String motif;
-    public static String team;
+    public static String motif="GPP";
+    public static String team="blue";
     public static double transferBeltStart = 1, transferBeltStop = 0.5, transferBeltMid = 0.8;
     public static double transferDisengage=0.35, transferEngage=0.6, transferKick=0.88;
 
 
-    public static double engageTarget = 0.0;   // where we WANT it to go
-    public static double engageStep = 0.002;   // how much to move per loop
-    public static double engagePos = 0.0;      // TRACKED servo position
+    public static int greenCount=0;
+    public static int purpleCount =0;
+    public static boolean purpleBallProcessed = false;
+    public static boolean greenBallProcessed = false;
 
-    public static boolean intaking = false;
+    public static boolean reversingIntake = false;
+
+
+
+
     public static boolean init = true;
     public static int engaged = 0;
 

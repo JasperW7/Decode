@@ -15,6 +15,7 @@ import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.Map;
 
@@ -58,14 +59,13 @@ public class Methods {
             return;
         }
 
-        // compute delta-position velocity
         double currentPos = motor.getCurrentPosition();
         double currentTime = System.nanoTime() / 1e9;
 
         double dt = currentTime - lastTime;
         double dp = currentPos - lastPos;
 
-        double measuredVelocity = dp / dt;   // ticks per second
+        double measuredVelocity = dp / dt;
 
         lastPos = currentPos;
         lastTime = currentTime;
@@ -124,33 +124,33 @@ public class Methods {
     }
 
 
-    public DetectedColor getDetectedColor(RevColorSensorV3 colorSensor, Telemetry telemetry){
+    private Methods.DetectedColor lastValidColor = DetectedColor.UNKNOWN;
 
-        NormalizedRGBA colors= colorSensor.getNormalizedColors();
+    public Methods.DetectedColor getDetectedColor(RevColorSensorV3 colorSensor, Telemetry telemetry){
 
-        float normRed, normGreen, normBlue;
-        normRed = colors.red/colors.alpha;
-        normGreen = colors.green/colors.alpha;
-        normBlue = colors.blue/colors.alpha;
+        NormalizedRGBA c = colorSensor.getNormalizedColors();
+        double distance = colorSensor.getDistance(DistanceUnit.CM);
 
+        final double BALL_PRESENT_THRESHOLD = 3.0;
 
-        /**
-         *red, green, blue
-         * GREEN =
-         * PURPLE =
-         */
-        telemetry.addData("red",normRed);
-        telemetry.addData("green",normGreen);
-        telemetry.addData("blue",normBlue);
-
-        if (normRed>0 && normGreen>0 && normBlue>0){ //swap with purple range
-            return DetectedColor.PURPLE; //purple
-        }else if (normRed>0.5 && normGreen>1 && normBlue>1){ //swap with green range
-            return DetectedColor.GREEN; //green
-        }else{
+        if (distance > BALL_PRESENT_THRESHOLD) {
             return DetectedColor.UNKNOWN;
         }
+
+        float R = c.red / Math.max(c.alpha, 1);
+        float G = c.green / Math.max(c.alpha, 1);
+        float B = c.blue / Math.max(c.alpha, 1);
+
+        if ((G / R) > 2.0 && G > B) {
+            lastValidColor = DetectedColor.GREEN;
+        } else if ((B / G) > 1.3 && B > R) {
+            lastValidColor = DetectedColor.PURPLE;
+        }
+
+        return lastValidColor;
     }
+
+
 
     public enum DetectedColor {
         GREEN,
@@ -220,10 +220,8 @@ public class Methods {
     //sigma was here
 
     //TODO: update lerp table for distance
-    //TODO: find distance using limelight
+    //TODO: find distance using odo (easy trig)
     //TODO: relocalize with limelight
-    //TODO: turret tracking using trig
-    //TODO: find color ranges
 
 
 

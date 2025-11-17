@@ -32,7 +32,6 @@ public class PositionTuner extends LinearOpMode {
     private FtcDashboard dashboard = FtcDashboard.getInstance();
     private ProfiledPIDController controller = new ProfiledPIDController(0,0,0,new TrapezoidProfile.Constraints(0,0));
 
-    // PID state
     private double integral = 0;
     private double lastError = 0;
     private ElapsedTime timer = new ElapsedTime();
@@ -57,13 +56,11 @@ public class PositionTuner extends LinearOpMode {
             controller.setPID(kP,kI,kD);
             controller.setConstraints(new TrapezoidProfile.Constraints(maxVel,maxAccel));
             motor.setPower(controller.calculate(currPos,targetPosition));
-            // --- Dashboard telemetry ---
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("Target Position", targetPosition);
             packet.put("Current Position", currPos);
             dashboard.sendTelemetryPacket(packet);
 
-            // --- Driver station telemetry ---
 
             telemetry.addData("Target", targetPosition);
             telemetry.addData("Position", currPos);

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.teleop;
 
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -75,7 +76,7 @@ public class Hardware {
 
         limelight = hwMap.get(Limelight3A.class,"limelight");
         colorSensor = hwMap.get(RevColorSensorV3.class, "colorSensor");
-
+        colorSensor.setGain(8);
 
 
     }

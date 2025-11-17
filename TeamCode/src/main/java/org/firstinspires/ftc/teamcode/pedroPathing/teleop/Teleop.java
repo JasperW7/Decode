@@ -28,6 +28,8 @@ public class Teleop extends OpMode {
     private Hardware robot;
 
     private Follower follower;
+
+
     public static Pose startingPose = new Pose(33.4,134.5,Math.toRadians(90));
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
@@ -68,6 +70,7 @@ public class Teleop extends OpMode {
         }
         telemetry.addData("RESET","SPINDEXER & TURRET POSITION");
         telemetry.addData("Team: ", Values.team);
+        telemetry.update();
 
     }
 
@@ -108,8 +111,10 @@ public class Teleop extends OpMode {
             }
         }
 
-        if (gamepad1.leftBumperWasPressed()){
+        if (gamepad1.leftBumperWasPressed() && Values.engaged!=2){
             if (Values.mode == Values.Mode.OUTTAKING){
+                Values.purpleCount=0;
+                Values.greenCount=0;
                 Values.mode = Values.Mode.INTAKING;
                 Values.init=true;
             }else if (Values.mode == Values.Mode.ENDGAME){
@@ -132,40 +137,59 @@ public class Teleop extends OpMode {
         }
 
 
-        switch (Values.mode){
+        switch (Values.mode) {
             case INTAKING:
-                if (Values.init){
-                    Values.spindexerConstants.index=3;
-                    Values.flywheelConstants.flywheelVelocity=0;
-                    Values.init=false;
+                if (Values.init) {
+                    Values.spindexerConstants.index = 3;
+                    Values.flywheelConstants.flywheelVelocity = 0;
+                    Values.init = false;
+
+                    Values.reversingIntake = false;
+                    Values.purpleBallProcessed = false;
+                    Values.greenBallProcessed = false;
                 }
+
                 Values.turretConstants.turretPosition = Values.turretConstants.turretStart;
 
 
+                Methods.DetectedColor color = methods.getDetectedColor(robot.colorSensor, telemetry);
 
-                robot.intake.setPower(1);
-                robot.transferEngage.setPosition(Values.transferDisengage);
-                robot.transfer.setPosition(Values.transferBeltStop);
+                if (Values.reversingIntake) {
+                    robot.intake.setPower(-0.8);
+                    robot.led.setPosition(.277);
+                } else {
+                    robot.intake.setPower(.8);
+                    if (color == Methods.DetectedColor.PURPLE && !Values.purpleBallProcessed) {
+                        robot.led.setPosition(.722);
+                        if (Values.purpleCount < 2) {
+                            Values.spindexerConstants.index = 3 + Values.purpleCount;
+                            Values.purpleCount++;
+                        }
+                        Values.purpleBallProcessed = true;
+                    } else if (color == Methods.DetectedColor.GREEN && !Values.greenBallProcessed) {
+                        robot.led.setPosition(0.444);
+                        if (Values.greenCount < 1) {
+                            Values.spindexerConstants.index = 3;
+                            Values.greenCount++;
+                        }
+                        Values.greenBallProcessed = true;
+                    } else {
+                        if (color == Methods.DetectedColor.UNKNOWN) {
+                            robot.led.setPosition(0);
+                        }
+                    }
 
-
-//
-//                Methods.DetectedColor color = methods.getDetectedColor(robot.colorSensor, telemetry);
-//
-//                if (color != Methods.DetectedColor.UNKNOWN && color != robot.lastColor) {
-//                    robot.lastColor = color;
-//
-//                    if (Values.mode == Values.Mode.INTAKING && color != Methods.DetectedColor.GREEN) {
-//                        robot.led.setPosition(0.722);
-//                    } else if (Values.mode == Values.Mode.INTAKING) {
-//                        robot.led.setPosition(0.444);
-//                    } else {
-//                        robot.led.setPosition(0);
-//                    }
-//                }
-
-
-
+                    if (Values.purpleCount >= 3 || Values.greenCount >= 2) {
+                        Values.reversingIntake = true;
+                    }
+                }
                 break;
+
+
+
+
+
+
             case OUTTAKING:
                 if (Values.init){
                     Values.engaged = 0;
@@ -175,9 +199,7 @@ public class Teleop extends OpMode {
                 //methods.velocityPID(robot.flywheel,methods.calculateVelocity(robot.limelight),"flywheel");
                 robot.intake.setPower(0);
 
-                Values.turretConstants.turretPosition += (gamepad1.left_trigger>0)? 20:0;
-                Values.turretConstants.turretPosition -= (gamepad1.right_trigger>0)? 20:0;
-                Values.turretConstants.turretPosition = Math.min(Values.turretConstants.turretMax, Math.max(Values.turretConstants.turretMin,Values.turretConstants.turretPosition));
+                Values.turretConstants.turretPosition = methods.turretAutoTrack(follower.getPose());
                 Values.flywheelConstants.flywheelVelocity=1800;
 
                 if (Math.abs(robot.flywheel.getVelocity()-Values.flywheelConstants.flywheelVelocity)<90){
@@ -250,10 +272,14 @@ public class Teleop extends OpMode {
             methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
 
         }
+        if (gamepad1.startWasPressed()){
+            methods.manualRelocalize(follower);
+        }
+
 
         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.indexer[Values.spindexerConstants.index];
         methods.velocityPID(robot.flywheel,Values.flywheelConstants.flywheelVelocity, "flywheel");
-        methods.positionPID(robot.turret,methods.turretAutoTrack(follower.getPose()),"turret");
+        methods.positionPID(robot.turret,Values.turretConstants.turretPosition,"turret");
         methods.positionPID(robot.spindexer,Values.spindexerConstants.spindexerPosition,"spindexer");
         //turret trig calc
         double x = follower.getPose().getX();
@@ -278,10 +304,14 @@ public class Teleop extends OpMode {
         telemetry.addData("index",Values.spindexerConstants.index);
         telemetry.addData("turret",robot.turret.getCurrentPosition());
         telemetry.addData("flywheel",robot.flywheel.getVelocity());
+        telemetry.addData("reversed intake", Values.reversingIntake);
+        telemetry.addData("purple count", Values.purpleCount);
+        telemetry.addData("green count", Values.greenCount);
         telemetry.addData("position", follower.getPose());
-        telemetry.addData("velocity", follower.getVelocity());
+        telemetry.addData("velocixty", follower.getVelocity());
 
         telemetry.addData("automatedDrive", automatedDrive);
+        telemetry.update();
     }
 
     @Override

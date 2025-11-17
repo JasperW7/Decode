@@ -13,10 +13,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 @TeleOp(name = "FlywheelVelocityTuner", group = "Tuning")
 public class FlywheelVelocityTuner extends LinearOpMode {
 
-    // Dashboard-tunable target velocity
     public static double targetVelocity = 1500;
 
-    // These update the Values.flywheelConstants dynamically
     public static double fP = 0.002;
     public static double fI = 0.0;
     public static double fD = 0.0;
@@ -43,12 +41,10 @@ public class FlywheelVelocityTuner extends LinearOpMode {
 
         waitForStart();
 
-        // Reset PID loop state in your velocityPID() code
         methods.resetVelocityPID();
 
         while (opModeIsActive()) {
 
-            // Update the actual constants your Methods.velocityPID() uses
             Values.intakeConstants.iP = fP;
             Values.intakeConstants.iI = fI;
             Values.intakeConstants.iD = fD;
@@ -58,19 +54,16 @@ public class FlywheelVelocityTuner extends LinearOpMode {
 
             Values.flywheelConstants.flywheelPIDF.setPIDF(fP, fI, fD, fK);
 
-            // ---- RUN YOUR ACTUAL LOGIC ----
             methods.velocityPID(flywheel, targetVelocity, "intake");
 
             double measuredVelocity = flywheel.getVelocity();
 
-            // === Dashboard Telemetry ===
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("TargetVelocity", targetVelocity);
             packet.put("MeasuredVelocity", measuredVelocity);
             packet.put("Power", flywheel.getPower());
             dashboard.sendTelemetryPacket(packet);
 
-            // === Driver Station Telemetry ===
             telemetry.addData("Target", targetVelocity);
             telemetry.addData("Velocity", measuredVelocity);
             telemetry.update();
