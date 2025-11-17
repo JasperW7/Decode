@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.teleop.Values;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -151,32 +153,37 @@ public class Teleop extends OpMode {
 
                 Values.turretConstants.turretPosition = Values.turretConstants.turretStart;
 
-
+                double distance = robot.colorSensor.getDistance(DistanceUnit.CM);
                 Methods.DetectedColor color = methods.getDetectedColor(robot.colorSensor, telemetry);
-
+                telemetry.addData("color",color);
                 if (Values.reversingIntake) {
                     robot.intake.setPower(-0.8);
                     robot.led.setPosition(.277);
                 } else {
                     robot.intake.setPower(.8);
+
                     if (color == Methods.DetectedColor.PURPLE && !Values.purpleBallProcessed) {
                         robot.led.setPosition(.722);
-                        if (Values.purpleCount < 2) {
-                            Values.spindexerConstants.index = 3 + Values.purpleCount;
-                            Values.purpleCount++;
+                        if (Values.purpleCount==0) {
+                            Values.spindexerConstants.index = 4;
+                        }else if (Values.purpleCount==1){
+                            Values.spindexerConstants.index=5;
                         }
+                        Values.purpleCount++;
                         Values.purpleBallProcessed = true;
                     } else if (color == Methods.DetectedColor.GREEN && !Values.greenBallProcessed) {
                         robot.led.setPosition(0.444);
-                        if (Values.greenCount < 1) {
+                        if (Values.greenCount < 2) {
                             Values.spindexerConstants.index = 3;
                             Values.greenCount++;
                         }
                         Values.greenBallProcessed = true;
-                    } else {
-                        if (color == Methods.DetectedColor.UNKNOWN) {
-                            robot.led.setPosition(0);
-                        }
+                    }
+
+                    if (distance > 5.0 || color==Methods.DetectedColor.UNKNOWN) {
+                        Values.purpleBallProcessed = false;
+                        Values.greenBallProcessed = false;
+                        robot.led.setPosition(0);
                     }
 
                     if (Values.purpleCount >= 3 || Values.greenCount >= 2) {
@@ -184,6 +191,7 @@ public class Teleop extends OpMode {
                     }
                 }
                 break;
+
 
 
 
@@ -307,8 +315,10 @@ public class Teleop extends OpMode {
         telemetry.addData("reversed intake", Values.reversingIntake);
         telemetry.addData("purple count", Values.purpleCount);
         telemetry.addData("green count", Values.greenCount);
+        telemetry.addData("purple processed",Values.purpleBallProcessed);
+        telemetry.addData("green processed",Values.greenBallProcessed);
         telemetry.addData("position", follower.getPose());
-        telemetry.addData("velocixty", follower.getVelocity());
+        telemetry.addData("velocity", follower.getVelocity());
 
         telemetry.addData("automatedDrive", automatedDrive);
         telemetry.update();
