@@ -161,7 +161,7 @@ public class Methods {
     public double getLimelightDistance(Limelight3A ll){
         return 0; //[some distance that is calculated]
     }
-    private double interpolateVelocity(double distance) {
+    public double interpolateVelocity(double distance) {
         if (lerpTable.containsKey(distance)) return lerpTable.get(distance);
 
         Map.Entry<Double, Integer> lower = lerpTable.floorEntry(distance);
@@ -192,7 +192,7 @@ public class Methods {
             dx = botPose.getX() - 12.5;
             dy = 137.3 - botPose.getY();
         }else{
-            dx = 131.5-botPose.getX();
+            dx =botPose.getX()-131.5;
             dy= 137.3-botPose.getY();
         }
         double theta = 180 - Math.toDegrees(botPose.getHeading())
@@ -209,6 +209,14 @@ public class Methods {
             follower.setPose(new Pose(9.5, 9.5, Math.toRadians(90)));
         }else{
             follower.setPose(new Pose(134.5,9.5,Math.toRadians(90)));
+        }
+    }
+
+    public double getDistance(Follower follower){
+        if (Values.team.equals("blue")){
+            return Math.hypot((follower.getPose().getX()-12.5),(follower.getPose().getY()-137.3));
+        }else{
+            return Math.hypot((follower.getPose().getX()-131.5),(follower.getPose().getY()-137.5));
         }
     }
 

@@ -38,14 +38,14 @@ public final class Values {
 
     public static final class spindexerConstants {
         public static final ProfiledPIDController spindexerPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
-        public static double sP = 0.01;
-        public static double sI = 0.13;
-        public static double sD = 0.0003;
+        public static double sP = -0.00025;
+        public static double sI = -0.08;
+        public static double sD = -0.00003;
         public static double sK = 0;
-        public static double sV =3000;
-        public static double sA = 1000;
+        public static double sV =100000;
+        public static double sA = 70000;
         public static double spindexerPosition=0;
-        public static final double spindexerStart = 0, spindexerGreen=100, spindexerPurple1=230, spindexerPurple2=357, spindexerGreenTransfer = 290,spindexerPurpleTransfer1 = 25, spindexerPurpleTransfer3 = 164;
+        public static final double spindexerStart = 0, spindexerGreen=2100, spindexerPurple1=4950, spindexerPurple2=7800, spindexerGreenTransfer = 6200,spindexerPurpleTransfer1 = 800, spindexerPurpleTransfer3 = 3600; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
         public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
         public static int index = 0;
     }
@@ -74,7 +74,7 @@ public final class Values {
 
 
 
-    public static Mode mode = Mode.OUTTAKING;
+    public static Mode mode = Mode.INTAKING;
 
     // Example mechanism positions
 
@@ -82,11 +82,9 @@ public final class Values {
     public static final TreeMap<Double, Integer> lerpTable = new TreeMap<>(
             // distance, target velocity
             Map.ofEntries(
-                    Map.entry(2.13, 2100),
-                    Map.entry(2.54, 2000),
-                    Map.entry(3.81, 2000),
-                    Map.entry(4.5, 2000),
-                    Map.entry(4.7, 2000)
+                    Map.entry(38.386, 1500),
+                    Map.entry(64.55,1670),
+                    Map.entry(74.0316, 1770)
             )
     );
     public static String motif="GPP";
@@ -99,13 +97,22 @@ public final class Values {
     public static int purpleCount =0;
     public static boolean purpleBallProcessed = false;
     public static boolean greenBallProcessed = false;
+    public static boolean waitingOnSpindex = false;
 
     public static boolean reversingIntake = false;
+    public static Methods.DetectedColor lastDetectedColor = Methods.DetectedColor.UNKNOWN;
+    public static Methods.DetectedColor lastProcessedColor = Methods.DetectedColor.UNKNOWN;
+    public static Methods.DetectedColor reversingColor = Methods.DetectedColor.UNKNOWN;
+
+
+    public static boolean waitingForBallToLeave = false;
+    public static int lastColorFrames=0;
 
 
 
 
     public static boolean init = true;
     public static int engaged = 0;
+    public static boolean endgame = false;
 
 }

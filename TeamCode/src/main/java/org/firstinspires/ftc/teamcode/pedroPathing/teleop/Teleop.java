@@ -3,6 +3,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
+
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -32,7 +33,7 @@ public class Teleop extends OpMode {
     private Follower follower;
 
 
-    public static Pose startingPose = new Pose(33.4,134.5,Math.toRadians(90));
+    public static Pose startingPose = new Pose(15,112,Math.toRadians(0));
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
@@ -67,8 +68,10 @@ public class Teleop extends OpMode {
         methods.positionPID(robot.spindexer,Values.spindexerConstants.spindexerStart,"spindexer");
         if (gamepad1.aWasPressed()){
             Values.team="blue";
+            startingPose = new Pose(15,112,Math.toRadians(0));
         }else if (gamepad1.bWasPressed()){
             Values.team="red";
+            startingPose = new Pose(129,112,Math.toRadians(180));
         }
         telemetry.addData("RESET","SPINDEXER & TURRET POSITION");
         telemetry.addData("Team: ", Values.team);
@@ -92,25 +95,13 @@ public class Teleop extends OpMode {
         telemetryM.update();
 
         if (!automatedDrive) {
-            //Make the last parameter false for field-centric
-            //In case the drivers want to use a "slowMode" you can scale the vectors
 
-            //This is the normal version to use in the TeleOp
-            if (Values.mode==Values.Mode.ENDGAME){
-                follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y*0.5,
-                        -gamepad1.left_stick_x*0.5,
-                        -gamepad1.right_stick_x*0.5,
-                        true // Robot Centric
-                );
-            }else {
-                follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x,
-                        true // Robot Centric
-                );
-            }
+            follower.setTeleOpDrive(
+                    -gamepad2.left_stick_y,
+                    -gamepad2.left_stick_x,
+                    -gamepad2.right_stick_x,
+                    true);
+
         }
 
         if (gamepad1.leftBumperWasPressed() && Values.engaged!=2){
@@ -149,50 +140,164 @@ public class Teleop extends OpMode {
                     Values.reversingIntake = false;
                     Values.purpleBallProcessed = false;
                     Values.greenBallProcessed = false;
+
+                    Values.waitingOnSpindex = false;
+                    Values.lastDetectedColor = Methods.DetectedColor.UNKNOWN;
+                    Values.lastColorFrames = 0;
                 }
 
                 Values.turretConstants.turretPosition = Values.turretConstants.turretStart;
 
                 double distance = robot.colorSensor.getDistance(DistanceUnit.CM);
-                Methods.DetectedColor color = methods.getDetectedColor(robot.colorSensor, telemetry);
-                telemetry.addData("color",color);
-                if (Values.reversingIntake) {
-                    robot.intake.setPower(-0.8);
-                    robot.led.setPosition(.277);
-                } else {
-                    robot.intake.setPower(.8);
+                Methods.DetectedColor rawColor = methods.getDetectedColor(robot.colorSensor, telemetry);
 
+                if (rawColor == Values.lastDetectedColor && rawColor != Methods.DetectedColor.UNKNOWN) {
+                    Values.lastColorFrames++;
+                } else {
+                    Values.lastColorFrames = 0;
+                    Values.lastDetectedColor = rawColor;
+                }
+
+                Methods.DetectedColor color = (Values.lastColorFrames >= 2) ? rawColor : Methods.DetectedColor.UNKNOWN;
+
+                telemetry.addData("rawColor", rawColor);
+                telemetry.addData("stableColor", color);
+
+                if (gamepad1.leftBumperWasPressed()) {
+                    if (Values.lastDetectedColor == Methods.DetectedColor.GREEN) {
+                        Values.greenCount = Math.max(0, Values.greenCount - 1);
+                    } else if (Values.lastDetectedColor == Methods.DetectedColor.PURPLE) {
+                        Values.purpleCount = Math.max(0, Values.purpleCount - 1);
+                    }
+
+                    Values.reversingIntake = false;
+                    Values.waitingOnSpindex = false;
+
+                    Values.greenBallProcessed = false;
+                    Values.purpleBallProcessed = false;
+
+                    robot.led.setPosition(0);
+                }
+
+                if (Values.endgame) {
+
+                    if (Values.purpleCount >= 3) {
+                        Values.reversingColor = Methods.DetectedColor.PURPLE;
+                        Values.reversingIntake = true;
+                    } else if (Values.greenCount >= 2) {
+                        Values.reversingColor = Methods.DetectedColor.GREEN;
+                        Values.reversingIntake = true;
+                    }
+                } else {
+                    if ((Values.purpleCount + Values.greenCount) > 3) {
+                        Values.reversingColor = Methods.DetectedColor.UNKNOWN;
+                        Values.reversingIntake = true;
+                    }
+                }
+
+                if (Values.reversingIntake) {
+                    robot.intake.setPower(-1);
+                    robot.led.setPosition(.277);
+
+                    boolean ballGone = (color == Methods.DetectedColor.UNKNOWN) && distance > 4.0;
+
+                    if (ballGone) {
+                        if (Values.reversingColor == Methods.DetectedColor.PURPLE) {
+                            Values.purpleCount = Math.max(0, Values.purpleCount - 1);
+                        } else if (Values.reversingColor == Methods.DetectedColor.GREEN) {
+                            Values.greenCount = Math.max(0, Values.greenCount - 1);
+                        } else {
+                            if (Values.purpleCount + Values.greenCount > 0) {
+                                if (Values.purpleCount > 0) Values.purpleCount--;
+                                else if (Values.greenCount > 0) Values.greenCount--;
+                            }
+                        }
+
+                        Values.reversingIntake = false;
+                        Values.reversingColor = Methods.DetectedColor.UNKNOWN;
+                        Values.purpleBallProcessed = false;
+                        Values.greenBallProcessed = false;
+
+                        robot.led.setPosition(0);
+                    }
+
+                    break;
+                }
+
+                if (Values.waitingOnSpindex) {
+                    robot.intake.setPower(0);
+                    int error = (int) Math.abs(
+                            Values.spindexerConstants.spindexerPosition - robot.spindexer.getCurrentPosition()
+                    );
+
+                    if (error < 200)
+                        Values.waitingOnSpindex = false;
+
+                    break;
+                }
+
+
+                if (Values.endgame) {
+                    robot.intake.setPower(1);
                     if (color == Methods.DetectedColor.PURPLE && !Values.purpleBallProcessed) {
                         robot.led.setPosition(.722);
-                        if (Values.purpleCount==0) {
-                            Values.spindexerConstants.index = 4;
-                        }else if (Values.purpleCount==1){
-                            Values.spindexerConstants.index=5;
-                        }
+
+                        if (Values.purpleCount == 0) Values.spindexerConstants.index = 4;
+                        else if (Values.purpleCount == 1) Values.spindexerConstants.index = 5;
+
                         Values.purpleCount++;
                         Values.purpleBallProcessed = true;
-                    } else if (color == Methods.DetectedColor.GREEN && !Values.greenBallProcessed) {
-                        robot.led.setPosition(0.444);
+
+                        Values.waitingOnSpindex = true;
+                        break;
+                    }
+
+                    if (color == Methods.DetectedColor.GREEN && !Values.greenBallProcessed) {
+                        robot.led.setPosition(.444);
+
                         if (Values.greenCount < 2) {
                             Values.spindexerConstants.index = 3;
                             Values.greenCount++;
                         }
+
                         Values.greenBallProcessed = true;
+
+                        Values.waitingOnSpindex = true;
+                        break;
+                    }
+                } else {
+                    robot.led.setPosition(.611);
+                    Values.purpleBallProcessed = false;
+                    Values.greenBallProcessed = false;
+
+                    if (gamepad1.aWasPressed()){
+                        if (Values.spindexerConstants.index==3){
+                            Values.spindexerConstants.index=4;
+                            methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
+                        }else if (Values.spindexerConstants.index==4){
+                            Values.spindexerConstants.index=5;
+                            methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
+                        }else if (Values.spindexerConstants.index==5){
+                            Values.spindexerConstants.index=3;
+                            methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
+                        }
                     }
 
-                    if (distance > 5.0 || color==Methods.DetectedColor.UNKNOWN) {
-                        Values.purpleBallProcessed = false;
-                        Values.greenBallProcessed = false;
-                        robot.led.setPosition(0);
-                    }
-
-                    if (Values.purpleCount >= 3 || Values.greenCount >= 2) {
-                        Values.reversingIntake = true;
+                    if (gamepad1.left_bumper){
+                        robot.intake.setPower(.8);
+                    }else{
+                        robot.intake.setPower(0);
                     }
                 }
+
+
+                if (distance > 5.0 || color == Methods.DetectedColor.UNKNOWN) {
+                    Values.purpleBallProcessed = false;
+                    Values.greenBallProcessed = false;
+                    robot.led.setPosition(0);
+                }
+
                 break;
-
-
 
 
 
@@ -208,7 +313,7 @@ public class Teleop extends OpMode {
                 robot.intake.setPower(0);
 
                 Values.turretConstants.turretPosition = methods.turretAutoTrack(follower.getPose());
-                Values.flywheelConstants.flywheelVelocity=1800;
+                Values.flywheelConstants.flywheelVelocity=methods.interpolateVelocity(methods.getDistance(follower));
 
                 if (Math.abs(robot.flywheel.getVelocity()-Values.flywheelConstants.flywheelVelocity)<90){
                     robot.led.setPosition(0.444);
@@ -283,6 +388,9 @@ public class Teleop extends OpMode {
         if (gamepad1.startWasPressed()){
             methods.manualRelocalize(follower);
         }
+        if (gamepad1.yWasPressed()){
+            Values.endgame = !Values.endgame;
+        }
 
 
         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.indexer[Values.spindexerConstants.index];
@@ -303,22 +411,20 @@ public class Teleop extends OpMode {
 //        }
 //
 //        //Stop automated following if the follower is done
-//        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+//        if (automatedDrive && (gamepad1.bWasPressed() || ! follower.isBusy())) {
 //            follower.startTeleopDrive();
 //            automatedDrive = false;
 //        }
 //        lt.update();
         telemetry.addData("mode", Values.mode);
         telemetry.addData("index",Values.spindexerConstants.index);
-        telemetry.addData("turret",robot.turret.getCurrentPosition());
         telemetry.addData("flywheel",robot.flywheel.getVelocity());
-        telemetry.addData("reversed intake", Values.reversingIntake);
-        telemetry.addData("purple count", Values.purpleCount);
-        telemetry.addData("green count", Values.greenCount);
-        telemetry.addData("purple processed",Values.purpleBallProcessed);
-        telemetry.addData("green processed",Values.greenBallProcessed);
+        telemetry.addData("flywheel power", robot.flywheel.getPower());
+        telemetry.addData("flywheel target",Values.flywheelConstants.flywheelVelocity);
+        telemetry.addData("dist", methods.getDistance(follower));
+        telemetry.addData("sorting",Values.endgame);
+
         telemetry.addData("position", follower.getPose());
-        telemetry.addData("velocity", follower.getVelocity());
 
         telemetry.addData("automatedDrive", automatedDrive);
         telemetry.update();
