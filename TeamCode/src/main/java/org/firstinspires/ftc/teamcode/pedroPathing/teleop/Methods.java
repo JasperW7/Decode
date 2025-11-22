@@ -4,19 +4,25 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.teleop.Values.lerpTabl
 
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
 import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.limelightvision.LLFieldMap;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
+import java.util.List;
 import java.util.Map;
 
 public class Methods {
@@ -180,23 +186,21 @@ public class Methods {
         return r1 + (r2 - r1) * ratio;
     }
 
-    public double calculateVelocity(Limelight3A ll){
-        double distance = getLimelightDistance(ll);
-        return interpolateVelocity(distance);
-
-    }
 
     public double turretAutoTrack(Pose botPose) {
-        double dy,dx;
+        double dy,dx,theta;
         if (Values.team.equals("blue")) {
             dx = botPose.getX() - 12.5;
             dy = 137.3 - botPose.getY();
+            theta = 180 - Math.toDegrees(botPose.getHeading())
+                    - Math.toDegrees(Math.atan2(dy, dx));
         }else{
-            dx =botPose.getX()-131.5;
-            dy= 137.3-botPose.getY();
+            dx = botPose.getX() - 131.5;
+            dy = 137.3 - botPose.getY();
+            theta = 180 - Math.toDegrees(botPose.getHeading())
+                    - Math.toDegrees(Math.atan2(dy, dx));
+
         }
-        double theta = 180 - Math.toDegrees(botPose.getHeading())
-                - Math.toDegrees(Math.atan2(dy, dx));
         double ticks = 55 * theta / 9;
         double wrapped = ((ticks + 1100) % 2200);
         if (wrapped < 0) wrapped += 2200;
@@ -221,9 +225,76 @@ public class Methods {
     }
 
 
-//    public double[] relocalize(Limelight3A ll){
-//        return [x,y,heading];
-//    }
+    private Pose lastGoodPose = null;
+
+    public void relocalize(Limelight3A ll, Follower follower) {
+        LLResult result = ll.getLatestResult();
+        if (!result.isValid()) return;
+        if (result.getFiducialResults().isEmpty()) return;
+
+        Pose3D botpose = result.getBotpose();
+
+        double llX = botpose.getPosition().x;
+        double llY = botpose.getPosition().y;
+        double llHeading = Math.toRadians(botpose.getOrientation().getYaw());
+
+        Pose llPose = new Pose(llX, llY, llHeading);
+
+        if (lastGoodPose == null) {
+            lastGoodPose = llPose;
+            follower.setPose(llPose);
+            return;
+        }
+
+        double dx = Math.abs(llX - lastGoodPose.getX());
+        double dy = Math.abs(llY - lastGoodPose.getY());
+        if (dx > 0.20 || dy > 0.20) return;
+
+        double alpha = 0.25;
+        Pose filteredPose = new Pose(
+                lerp(lastGoodPose.getX(), llX, alpha),
+                lerp(lastGoodPose.getY(), llY, alpha),
+                lerpAngle(lastGoodPose.getHeading(), llHeading, alpha)
+        );
+
+        lastGoodPose = filteredPose;
+        follower.setPose(filteredPose);
+    }
+
+    private double lerp(double a, double b, double t) {
+        return a + (b - a) * t;
+    }
+
+    private double lerpAngle(double a, double b, double t) {
+        double diff = ((b - a + Math.PI) % (2*Math.PI)) - Math.PI;
+        return a + diff * t;
+    }
+
+
+    public String getMotif(Limelight3A ll) {
+        List<LLResultTypes.FiducialResult> result = ll.getLatestResult().getFiducialResults();
+        if (!result.isEmpty()) {
+
+            for (LLResultTypes.FiducialResult fiducial : result){
+                int id = fiducial.getFiducialId();
+                switch (id) {
+                    case 21:
+                        return "GPP";
+                    case 22:
+                        return "PGP";
+                    case 23:
+                        return "PPG";
+                    default:
+                        return Integer.toString(id);
+                }
+            }
+        }
+        ;
+        return "";
+    }
+
+
+
 
     //sigma was here
 
