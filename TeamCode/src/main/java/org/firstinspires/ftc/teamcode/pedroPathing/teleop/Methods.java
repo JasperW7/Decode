@@ -238,7 +238,11 @@ public class Methods {
         double llY = botpose.getPosition().y;
         double llHeading = Math.toRadians(botpose.getOrientation().getYaw());
 
-        Pose llPose = new Pose(llX, llY, llHeading);
+        double pedroX = -llY;
+        double pedroY = llX;
+        double pedroHeading = llHeading + Math.toRadians(90);
+
+        Pose llPose = new Pose(pedroX, pedroY, pedroHeading);
 
         if (lastGoodPose == null) {
             lastGoodPose = llPose;
