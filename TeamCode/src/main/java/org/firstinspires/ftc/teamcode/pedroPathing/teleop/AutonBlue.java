@@ -5,10 +5,15 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+import java.util.List;
 
 @Autonomous(name = "blue leave auton", group = "Auto")
 public class AutonBlue extends OpMode {
@@ -250,6 +255,7 @@ public class AutonBlue extends OpMode {
         telemetry.addData("state",pathState);
         telemetry.addData("position", follower.getPose());
         telemetry.addData("motif",Values.motif);
+        telemetry.addData("fiducials", getMotif(robot.limelight,telemetry));
         methods.positionPID(robot.turret,methods.turretAutoTrack(follower.getPose()),"turret");
         methods.velocityPID(robot.flywheel,Values.flywheelConstants.flywheelVelocity,"flywheel");
         methods.positionPID(robot.spindexer,Values.spindexerConstants.spindexerPosition, "spindexer");
@@ -372,12 +378,12 @@ public class AutonBlue extends OpMode {
 
                 if (!follower.isBusy()) {
                     nextPath();
-                    Values.motif=methods.getMotif(robot.limelight);
+                    Values.motif=getMotif(robot.limelight,telemetry);
                 };
                 break;
 
             case 1:
-                Values.motif=methods.getMotif(robot.limelight);
+                Values.motif=getMotif(robot.limelight,telemetry);
                 switch (Values.motif) {
                     case "PPG":
                     case "PGP":
@@ -553,5 +559,27 @@ public class AutonBlue extends OpMode {
     public void nextAction() {
         actionState ++;
         actionTimer.resetTimer();
+    }
+    public String getMotif(Limelight3A ll, Telemetry telemetry) {
+        List<LLResultTypes.FiducialResult> result = ll.getLatestResult().getFiducialResults();
+        if (!result.isEmpty()) {
+
+            for (LLResultTypes.FiducialResult fiducial : result){
+                int id = fiducial.getFiducialId();
+                switch (id) {
+                    case 21:
+                        return "GPP";
+                    case 22:
+                        return "PGP";
+                    case 23:
+                        return "PPG";
+                    default:
+                        return Integer.toString(id);
+                }
+            }
+        }
+        telemetry.addData("tags",result);
+
+        return "";
     }
 }

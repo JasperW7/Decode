@@ -271,7 +271,7 @@ public class Methods {
     }
 
 
-    public String getMotif(Limelight3A ll) {
+    public String getMotif(Limelight3A ll, Telemetry telemetry) {
         List<LLResultTypes.FiducialResult> result = ll.getLatestResult().getFiducialResults();
         if (!result.isEmpty()) {
 
@@ -289,7 +289,8 @@ public class Methods {
                 }
             }
         }
-        ;
+        telemetry.addData("tags",result);
+
         return "";
     }
 
