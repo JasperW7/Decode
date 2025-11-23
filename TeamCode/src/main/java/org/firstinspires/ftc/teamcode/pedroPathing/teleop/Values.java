@@ -41,13 +41,13 @@ public final class Values {
     public static final class spindexerConstants {
         public static final ProfiledPIDController spindexerPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
         public static double sP = -0.00025;
-        public static double sI = -0.1;
+        public static double sI = -0.12;
         public static double sD = -0.00003;
         public static double sK = 0;
-        public static double sV =200000;
-        public static double sA = 200000;
+        public static double sV =1000000;
+        public static double sA = 100000;
         public static double spindexerPosition=0;
-        public static final double spindexerStart = 0, spindexerGreen=2100, spindexerPurple1=4950, spindexerPurple2=7800, spindexerGreenTransfer = 6200,spindexerPurpleTransfer1 = 800, spindexerPurpleTransfer3 = 3600; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
+        public static final double spindexerStart = 0, spindexerGreen=2100, spindexerPurple1=4950, spindexerPurple2=7900, spindexerGreenTransfer = 6200,spindexerPurpleTransfer1 = 800, spindexerPurpleTransfer3 = 3600; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
         public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
         public static int index = 0;
     }
@@ -55,7 +55,7 @@ public final class Values {
 
     public static final class turretConstants {
         public static final ProfiledPIDController turretPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
-        public static double tP = 0.006;
+        public static double tP = 0.007;
         public static double tI = 0.12;
         public static double tD = 0.0003;
         public static double tK = 0;
@@ -90,10 +90,17 @@ public final class Values {
                     Map.entry(84.1,1800)
             )
     );
-    public static String motif="";
+    public enum Motif {
+        PPG,
+        PGP,
+        GPP,
+        NONE
+    }
+    static Motif motif = Motif.NONE;
     public static String team="blue";
-    public static double transferBeltStart = 1, transferBeltStop = 0.5, transferBeltMid = 0.8;
-    public static double transferDisengage=0.35, transferEngage=0.6, transferKick=0.88;
+    public static final double transferBeltStart = 1, transferBeltStop = 0.5, transferBeltMid = 0.8;
+    public static double transferDisengage=0.35, transferKick=0.9;
+    public static double transferEngage=0.49;
 
 
     public static int greenCount=0;
@@ -117,5 +124,26 @@ public final class Values {
     public static boolean init = true;
     public static int engaged = 0;
     public static boolean endgame = false;
+    public static void reset(){
+        endgame=false;
+        engaged=0;
+        init=true;
+        drivers=false;
+        lastColorFrames=0;
+        reversingColor=Methods.DetectedColor.UNKNOWN;
+        lastDetectedColor=Methods.DetectedColor.UNKNOWN;
+        reversingIntake=false;
+        waitingOnSpindex=false;
+        greenCount=0;
+        purpleCount=0;
+        greenBallProcessed=false;
+        purpleBallProcessed=false;
+        team="blue";
+        motif=Motif.NONE;
+        mode=Mode.INTAKING;
+        turretConstants.turretPosition=0;
+        spindexerConstants.spindexerPosition=0;
+        flywheelConstants.flywheelVelocity=1800;
+    }
 
 }

@@ -271,30 +271,6 @@ public class Methods {
     }
 
 
-    public String getMotif(Limelight3A ll, Telemetry telemetry) {
-        List<LLResultTypes.FiducialResult> result = ll.getLatestResult().getFiducialResults();
-        if (!result.isEmpty()) {
-
-            for (LLResultTypes.FiducialResult fiducial : result){
-                int id = fiducial.getFiducialId();
-                switch (id) {
-                    case 21:
-                        return "GPP";
-                    case 22:
-                        return "PGP";
-                    case 23:
-                        return "PPG";
-                    default:
-                        return Integer.toString(id);
-                }
-            }
-        }
-        telemetry.addData("tags",result);
-
-        return "";
-    }
-
-
 
 
     //sigma was here

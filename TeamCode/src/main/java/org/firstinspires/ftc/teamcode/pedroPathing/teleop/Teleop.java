@@ -84,12 +84,14 @@ public class Teleop extends OpMode {
         telemetry.addData("RESET","SPINDEXER & TURRET POSITION");
         telemetry.addData("Team: ", Values.team);
         telemetry.addData("drivers", (Values.drivers)?"1" : "2");
+        telemetry.addData("position",follower.getPose());
         telemetry.update();
 
     }
 
     @Override
     public void start() {
+        follower.setPose(startingPose);
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
         //If you don't pass anything in, it uses the default (false)
@@ -420,12 +422,13 @@ public class Teleop extends OpMode {
             methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
 
         }
-        if (gamepad1.startWasPressed()){
-            methods.manualRelocalize(follower);
+        if (gamepad1.backWasPressed()){
+            methods.relocalize(robot.limelight,follower);
         }
         if (gamepad1.yWasPressed()){
             Values.endgame = !Values.endgame;
         }
+
 
 
         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.indexer[Values.spindexerConstants.index];
@@ -453,9 +456,10 @@ public class Teleop extends OpMode {
         telemetry.addData("flywheel",robot.flywheel.getVelocity());
         telemetry.addData("flywheel power", robot.flywheel.getPower());
         telemetry.addData("flywheel target",Values.flywheelConstants.flywheelVelocity);
+        telemetry.addData("transfer", Values.transferEngage);
         telemetry.addData("dist", methods.getDistance(follower));
         telemetry.addData("sorting",Values.endgame);
-
+        telemetry.addData("team",Values.team);
         telemetry.addData("position", follower.getPose());
         telemetry.addData("loop time",elapsedTime.milliseconds());
         telemetry.addData("automatedDrive", automatedDrive);
