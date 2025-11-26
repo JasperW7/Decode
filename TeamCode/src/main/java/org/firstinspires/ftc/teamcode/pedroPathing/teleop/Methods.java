@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.trajectory.TrapezoidProfile;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLFieldMap;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -21,6 +22,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import com.pedropathing.ftc.PoseConverter;
 
 import java.util.List;
 import java.util.Map;
@@ -227,52 +231,59 @@ public class Methods {
 
     private Pose lastGoodPose = null;
 
-    public void relocalize(Limelight3A ll, Follower follower) {
+    public void relocalize(Limelight3A ll, Follower follower, Telemetry telemetry) {
         LLResult result = ll.getLatestResult();
         if (!result.isValid()) return;
         if (result.getFiducialResults().isEmpty()) return;
 
         Pose3D botpose = result.getBotpose();
-
         double llX = botpose.getPosition().x;
         double llY = botpose.getPosition().y;
-        double llHeading = Math.toRadians(botpose.getOrientation().getYaw());
 
-        double pedroX = -llY;
-        double pedroY = llX;
-        double pedroHeading = llHeading + Math.toRadians(90);
+        double llDeg = botpose.getOrientation().getYaw(AngleUnit.DEGREES);
+        double llRad = Math.toRadians(llDeg);
+        ll.updateRobotOrientation(llDeg);
 
-        Pose llPose = new Pose(pedroX, pedroY, pedroHeading);
+        Pose2D llPose = new Pose2D(DistanceUnit.METER, llX, llY, AngleUnit.RADIANS, llRad);
+        Pose pedroPose = PoseConverter.pose2DToPose(llPose, InvertedFTCCoordinates.INSTANCE)
+                .getAsCoordinateSystem(PedroCoordinates.INSTANCE);
 
-        if (lastGoodPose == null) {
-            lastGoodPose = llPose;
-            follower.setPose(llPose);
+        Pose followerPose = follower.getPose();
+
+        double fx = followerPose.getX();
+        double fy = followerPose.getY();
+        double fth = followerPose.getHeading();
+
+        double lx = pedroPose.getX();
+        double ly = pedroPose.getY();
+        double lth = pedroPose.getHeading();
+
+        telemetry.addData("ll pose", llPose);
+        telemetry.addData("pedro pose", pedroPose);
+
+        if (Math.abs(lx - fx) > 0.20 || Math.abs(ly - fy) > 0.20) {
+            telemetry.addData("dist","too noisy");
             return;
         }
 
-        double dx = Math.abs(llX - lastGoodPose.getX());
-        double dy = Math.abs(llY - lastGoodPose.getY());
-        if (dx > 0.20 || dy > 0.20) return;
+        double wLL = 0.15;
+        double wFO = 0.85;
 
-        double alpha = 0.25;
-        Pose filteredPose = new Pose(
-                lerp(lastGoodPose.getX(), llX, alpha),
-                lerp(lastGoodPose.getY(), llY, alpha),
-                lerpAngle(lastGoodPose.getHeading(), llHeading, alpha)
-        );
+        double fusedX = fx * wFO + lx * wLL;
+        double fusedY = fy * wFO + ly * wLL;
+        double fusedH = lerpAngle(fth, lth, wLL);
 
-        lastGoodPose = filteredPose;
-        follower.setPose(filteredPose);
-    }
+        Pose fused = new Pose(fusedX, fusedY, fusedH);
+        telemetry.addData("fused pose", fused);
 
-    private double lerp(double a, double b, double t) {
-        return a + (b - a) * t;
+        follower.setPose(fused);
     }
 
     private double lerpAngle(double a, double b, double t) {
         double diff = ((b - a + Math.PI) % (2*Math.PI)) - Math.PI;
         return a + diff * t;
     }
+
 
 
 

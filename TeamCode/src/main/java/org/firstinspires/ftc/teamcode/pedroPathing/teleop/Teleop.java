@@ -153,11 +153,13 @@ public class Teleop extends OpMode {
                     Values.spindexerConstants.index = 3;
                     Values.flywheelConstants.flywheelVelocity = 0;
                     Values.init = false;
-                    Values.spindexerConstants.sA=100000;
+                    Values.spindexerConstants.sA=200000;
                     Values.reversingIntake = false;
                     Values.purpleBallProcessed = false;
                     Values.greenBallProcessed = false;
-
+                    Values.engaged = 0;
+                    robot.transfer.setPosition(Values.transferBeltStop);
+                    robot.transferEngage.setPosition(Values.transferDisengage);
                     Values.waitingOnSpindex = false;
                     Values.lastDetectedColor = Methods.DetectedColor.UNKNOWN;
                     Values.lastColorFrames = 0;
@@ -289,15 +291,15 @@ public class Teleop extends OpMode {
 
                     if (gamepad1.aWasPressed()){
                         if (Values.spindexerConstants.index ==3){
-                            Values.spindexerConstants.sA=100000;
+                            Values.spindexerConstants.sA=200000;
                             Values.spindexerConstants.index=4;
                             methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                         }else if (Values.spindexerConstants.index==4){
                             Values.spindexerConstants.index=5;
-                            Values.spindexerConstants.sA=200000;
+                            Values.spindexerConstants.sA=400000;
                             methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                         }else if (Values.spindexerConstants.index==5){
-                            Values.spindexerConstants.sA=200000;
+                            Values.spindexerConstants.sA=400000;
                             Values.spindexerConstants.index=3;
                             methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                         }
@@ -325,7 +327,7 @@ public class Teleop extends OpMode {
 
             case OUTTAKING:
                 if (Values.init){
-                    Values.spindexerConstants.sA=100000;
+                    Values.spindexerConstants.sA=200000;
                     Values.engaged = 0;
                     Values.spindexerConstants.index=0;
                     Values.init=false;
@@ -361,16 +363,17 @@ public class Teleop extends OpMode {
                     }
                 }
                 if (gamepad1.dpadRightWasPressed()){
+                    Values.engaged=0;
                     if (Values.spindexerConstants.index==0){
-                        Values.spindexerConstants.sA=200000;
+                        Values.spindexerConstants.sA=400000;
                         Values.spindexerConstants.index=1;
                         methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                     }else if (Values.spindexerConstants.index==1){
-                        Values.spindexerConstants.sA=200000;
+                        Values.spindexerConstants.sA=400000;
                         Values.spindexerConstants.index=2;
                         methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                     }else if (Values.spindexerConstants.index==2){
-                        Values.spindexerConstants.sA=100000;
+                        Values.spindexerConstants.sA=200000;
                         Values.spindexerConstants.index=0;
                         methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
                     }
@@ -385,6 +388,9 @@ public class Teleop extends OpMode {
             case ENDGAME:
                 Values.flywheelConstants.flywheelVelocity=0;
                 robot.intake.setPower(0);
+                Values.engaged = 0;
+                robot.transfer.setPosition(Values.transferBeltStop);
+                robot.transferEngage.setPosition(Values.transferDisengage);
 
 
         }
@@ -408,23 +414,9 @@ public class Teleop extends OpMode {
 //            Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.indexer[Values.spindexerConstants.index];
 //
 //        }
-        if (gamepad1.dpadRightWasPressed()) {
-            Values.engaged=0;
-            Values.spindexerConstants.index += 1;
-            Values.spindexerConstants.index %= Values.spindexerConstants.indexer.length;
-            methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
 
-        }
-        if (gamepad1.dpadLeftWasPressed()) {
-            Values.engaged=0;
-            Values.spindexerConstants.index += 5;
-            Values.spindexerConstants.index %= Values.spindexerConstants.indexer.length;
-            methods.resetProfiledPID(Values.spindexerConstants.spindexerPIDF, robot.spindexer);
+        methods.relocalize(robot.limelight,follower,telemetry);
 
-        }
-        if (gamepad1.backWasPressed()){
-            methods.relocalize(robot.limelight,follower);
-        }
         if (gamepad1.yWasPressed()){
             Values.endgame = !Values.endgame;
         }
@@ -435,7 +427,6 @@ public class Teleop extends OpMode {
         methods.velocityPID(robot.flywheel,Values.flywheelConstants.flywheelVelocity, "flywheel");
         methods.positionPID(robot.turret,Values.turretConstants.turretPosition,"turret");
         methods.positionPID(robot.spindexer,Values.spindexerConstants.spindexerPosition,"spindexer");
-        methods.relocalize(robot.limelight,follower);
 
 
 //

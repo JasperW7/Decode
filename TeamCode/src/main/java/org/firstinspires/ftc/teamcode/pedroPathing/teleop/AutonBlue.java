@@ -147,12 +147,12 @@ public class AutonBlue extends OpMode {
                 .build();
 
         grabFirstRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(100,86), new Pose(108,86)))
+                .addPath(new BezierLine(new Pose(100,86), new Pose(107,86)))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSecondRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(108,86), new Pose(113,86)))
+                .addPath(new BezierLine(new Pose(107,86), new Pose(113,86)))
                 .setTangentHeadingInterpolation()
                 .build();
 
@@ -163,31 +163,31 @@ public class AutonBlue extends OpMode {
 
         scoreFirstChainRed = follower.pathBuilder()
                 .addPath(new BezierCurve(new Pose(127,86), new Pose(96,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(260))
                 .build();
 
         toSecondChainRed = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(96,96), new Pose(102,60)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .addPath(new BezierCurve(new Pose(96,96), new Pose(76.6,80), new Pose(100,64)))
+                .setLinearHeadingInterpolation(Math.toRadians(260), Math.toRadians(0))
                 .build();
 
         grabFourthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(100,60), new Pose(107.5,60)))
+                .addPath(new BezierLine(new Pose(100,64), new Pose(107,64)))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabFifthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(105,60), new Pose(112.5,60)))
+                .addPath(new BezierLine(new Pose(107,64), new Pose(113,64)))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSixthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(110,60), new Pose(117.5,60)))
+                .addPath(new BezierLine(new Pose(113,64), new Pose(120,64)))
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreSecondChainRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(117.5,60), new Pose(96,96)))
+                .addPath(new BezierLine(new Pose(120,64), new Pose(96,96)))
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .build();
 
@@ -224,7 +224,6 @@ public class AutonBlue extends OpMode {
 
         follower.setStartingPose(startingPose);
 
-        // Map paths depending on alliance
         scorePreload     = isRed ? scorePreloadRed     : scorePreloadBlue;
         toFirstChain     = isRed ? toFirstChainRed     : toFirstChainBlue;
         grabFirstChain = isRed ? grabFirstRed : grabFirstBlue;
@@ -259,30 +258,6 @@ public class AutonBlue extends OpMode {
         telemetry.update();
     }
 
-    public boolean intakeGreen(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerGreenTransfer;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
-    public boolean intakePurple1(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerPurpleTransfer1;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
-    public boolean intakePurple2(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerPurpleTransfer3;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
-    public boolean transferGreen(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerGreen;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
-    public boolean transferPurple1(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerPurple1;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
-    public boolean transferPurple2(){
-        Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerPurple2;
-        return Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 100;
-    }
     public void transferStop(){
         robot.transfer.setPosition(Values.transferBeltStop);
         robot.transferEngage.setPosition(Values.transferDisengage);
@@ -296,11 +271,6 @@ public class AutonBlue extends OpMode {
         robot.transferEngage.setPosition(Values.transferKick);
     }
 
-    public boolean flywheel(){
-        Values.flywheelConstants.flywheelVelocity=1620;
-        return Math.abs(Values.flywheelConstants.flywheelVelocity - robot.flywheel.getVelocity()) < 50;
-    }
-
 
     public void autonomousPathUpdate() {
         switch (pathState) {
@@ -312,11 +282,11 @@ public class AutonBlue extends OpMode {
                 switch (Values.motif) {
                     case PPG:
                     case PGP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
                         break;
                     case GPP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                 }
@@ -335,18 +305,19 @@ public class AutonBlue extends OpMode {
 
             case 1:
             case 18:
+            case 35:
                 switch (Values.motif) {
                     case PPG:
                     case PGP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
                         break;
                     case GPP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                 }
-                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 500)
+                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 200)
                     nextPath();
                 break;
 
@@ -356,19 +327,23 @@ public class AutonBlue extends OpMode {
             case 19:
             case 23:
             case 27:
+            case 36:
+            case 40:
+            case 44:
                 robot.intake.setPower(0);
                 transferBelt();
                 if (pathTimer.getElapsedTimeSeconds() > .3) nextPath();
                 break;
 
             case 3:
-
             case 11:
-
             case 7:
             case 20:
             case 24:
             case 28:
+            case 37:
+            case 41:
+            case 45:
                 if (Math.abs(Values.flywheelConstants.flywheelVelocity - robot.flywheel.getVelocity()) < 50
                         && !follower.isBusy()) {
                     transferKick();
@@ -378,13 +353,14 @@ public class AutonBlue extends OpMode {
                 break;
 
             case 4:
-
             case 12:
-
             case 8:
             case 21:
             case 25:
             case 29:
+            case 38:
+            case 42:
+            case 46:
                 if (pathTimer.getElapsedTimeSeconds() > .2) {
                     transferBelt();
                     nextPath();
@@ -393,137 +369,236 @@ public class AutonBlue extends OpMode {
 
             case 5:
             case 22:
+            case 39:
                 switch (Values.motif) {
                     case PPG:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple2;
                         break;
                     case PGP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                     case GPP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
                         break;
                 }
-                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 500)
+                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 200)
                     nextPath();
                 break;
 
             case 9:
             case 26:
+            case 43:
                 switch (Values.motif) {
                     case PPG:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                     case PGP:
                     case GPP:
-                        Values.spindexerConstants.sA = 100000;
+                        //values.spindexerconstants.sa = 200000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple2;
                         break;
                 }
-                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 500)
+                if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 400)
                     nextPath();
                 break;
 
 
-                case 13:
-                    Values.flywheelConstants.flywheelVelocity = 0;
-                    transferStop();
-                    follower.setMaxPower(1);
-                    if (!caseInitialized) {
-                        Values.spindexerConstants.spindexerPosition =
-                                Values.spindexerConstants.spindexerPurpleTransfer3;
-                        follower.followPath(toFirstChain);
-                        pathTimer.resetTimer();
-                        caseInitialized = true;
-                    }
+            case 13:
+                Values.flywheelConstants.flywheelVelocity = 0;
+                transferStop();
+                follower.setMaxPower(1);
+                if (!caseInitialized) {
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer3;
+                    follower.followPath(toFirstChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
 
-                    if (Math.abs(robot.spindexer.getCurrentPosition() -
-                            Values.spindexerConstants.spindexerPosition) < 100 && follower.getDriveError()<1) {
-                        nextPath();
-                        caseInitialized = false;
-                    }
-                    break;
-
-
-                case 14:
-                    robot.intake.setPower(1);
-
-                    if (!caseInitialized) {
-                        follower.followPath(grabFirstChain);
-
-                        follower.setMaxPower(0.35);
-                        pathTimer.resetTimer();
-                        caseInitialized = true;
-                    }
-                    Values.spindexerConstants.sA=200000;
-
-                    if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
-                            Math.abs(robot.spindexer.getCurrentPosition() -
-                                    Values.spindexerConstants.spindexerPosition) < 200) {
-
-                        Values.spindexerConstants.spindexerPosition =
-                                Values.spindexerConstants.spindexerPurpleTransfer1;
-                        nextPath();
-                        caseInitialized = false;
-                    }
-                    break;
+                if (Math.abs(robot.spindexer.getCurrentPosition() -
+                        Values.spindexerConstants.spindexerPosition) < 200 && follower.getDriveError()<1) {
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
 
 
-                case 15:
-                    if (!caseInitialized) {
-                        follower.setMaxPower(0.35);
-                        follower.followPath(grabSecondChain);
-                        pathTimer.resetTimer();
-                        caseInitialized = true;
-                    }
-                    Values.spindexerConstants.sA=100000;
+            case 14:
+                robot.intake.setPower(1);
 
-                    if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
-                            Math.abs(robot.spindexer.getCurrentPosition() -
-                                    Values.spindexerConstants.spindexerPosition) < 200) {
+                if (!caseInitialized) {
+                    follower.followPath(grabFirstChain);
 
-                        Values.spindexerConstants.spindexerPosition =
-                                Values.spindexerConstants.spindexerGreenTransfer;
-                        nextPath();
-                        caseInitialized = false;
-                    }
-                    break;
+                    follower.setMaxPower(0.35);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+                //values.spindexerconstants.sa=200000;
 
-                case 16:
-                    if (!caseInitialized) {
-                        follower.setMaxPower(0.35);
-                        follower.followPath(grabThirdChain);
-                        pathTimer.resetTimer();
-                        caseInitialized = true;
-                    }
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
-                            Math.abs(robot.spindexer.getCurrentPosition() -
-                                    Values.spindexerConstants.spindexerPosition) < 200) {
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer1;
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
 
-                        nextPath();
-                        caseInitialized = false;
-                    }
-                    break;
 
-                case 17:
-                    Values.flywheelConstants.flywheelVelocity = 1600;
-                    follower.setMaxPower(1);
+            case 15:
+                if (!caseInitialized) {
+                    follower.setMaxPower(0.35);
+                    follower.followPath(grabSecondChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+                //values.spindexerconstants.sa=200000;
 
-                    if (!caseInitialized) {
-                        follower.followPath(scoreFirstChain);
-                        caseInitialized = true;
-                    }
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    if (!follower.isBusy()) {
-                        nextPath();
-                        caseInitialized = false;
-                    }
-                    break;
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerGreenTransfer;
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+
+            case 16:
+                if (!caseInitialized) {
+                    follower.setMaxPower(0.35);
+                    follower.followPath(grabThirdChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
+
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+
+            case 17:
+                Values.flywheelConstants.flywheelVelocity = 1600;
+                follower.setMaxPower(1);
+
+                if (!caseInitialized) {
+                    follower.followPath(scoreFirstChain);
+                    caseInitialized = true;
+                }
+
+                if (!follower.isBusy()) {
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 30:
+                Values.flywheelConstants.flywheelVelocity = 0;
+                transferStop();
+                follower.setMaxPower(1);
+                if (!caseInitialized) {
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer3;
+                    follower.followPath(toSecondChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+                if (Math.abs(robot.spindexer.getCurrentPosition() -
+                        Values.spindexerConstants.spindexerPosition) < 200 && follower.getDriveError()<1) {
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 31:
+                robot.intake.setPower(1);
+
+                if (!caseInitialized) {
+                    follower.followPath(grabFourthChain);
+
+                    follower.setMaxPower(0.35);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+                //values.spindexerconstants.sa=200000;
+
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
+
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerGreenTransfer;
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 32:
+                if (!caseInitialized) {
+                    follower.setMaxPower(0.35);
+                    follower.followPath(grabFifthChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+                //values.spindexerconstants.sa=200000;
+
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
+
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer1;
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 33:
+                if (!caseInitialized) {
+                    follower.setMaxPower(0.35);
+                    follower.followPath(grabSixthChain);
+                    pathTimer.resetTimer();
+                    caseInitialized = true;
+                }
+
+                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                        Math.abs(robot.spindexer.getCurrentPosition() -
+                                Values.spindexerConstants.spindexerPosition) < 200) {
+
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 34:
+                Values.flywheelConstants.flywheelVelocity = 1600;
+                follower.setMaxPower(1);
+
+                if (!caseInitialized) {
+                    follower.followPath(scoreSecondChain);
+                    caseInitialized = true;
+                }
+
+                if (!follower.isBusy()) {
+                    nextPath();
+                    caseInitialized = false;
+                }
+                break;
+            case 47:
+
+                follower.followPath(leave,1,true);
+                transferStop();
+                Values.spindexerConstants.spindexerPosition=Values.spindexerConstants.spindexerStart;
+
+
+
+
 
 
         }

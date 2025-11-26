@@ -40,12 +40,12 @@ public final class Values {
 
     public static final class spindexerConstants {
         public static final ProfiledPIDController spindexerPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
-        public static double sP = -0.00025;
+        public static double sP = -0.00028;
         public static double sI = -0.12;
         public static double sD = -0.00003;
         public static double sK = 0;
         public static double sV =1000000;
-        public static double sA = 100000;
+        public static double sA = 0;
         public static double spindexerPosition=0;
         public static final double spindexerStart = 0, spindexerGreen=2100, spindexerPurple1=4950, spindexerPurple2=7900, spindexerGreenTransfer = 6200,spindexerPurpleTransfer1 = 800, spindexerPurpleTransfer3 = 3600; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
         public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
