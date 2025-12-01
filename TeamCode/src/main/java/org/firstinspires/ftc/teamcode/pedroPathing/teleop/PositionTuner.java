@@ -18,12 +18,12 @@ import com.arcrobotics.ftclib.controller.PIDFController;
 public class PositionTuner extends LinearOpMode {
 
     public static double kF = 0;
-    public static double kP = 0.008;
-    public static double kI = 0.0;
-    public static double kD = 0.0001;
+    public static double kP = 0.007;
+    public static double kI = 0.12;
+    public static double kD = 0.0003;
     public static double maxVel = 0;
     public static double maxAccel = 0;
-    public static double multi = 0.5;
+    public static double multi = 1   ;
 
 
     public static double targetPosition = 0;
@@ -39,7 +39,7 @@ public class PositionTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        motor = hardwareMap.get(DcMotorEx.class, "spindexer");
+        motor = hardwareMap.get(DcMotorEx.class, "turret");
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

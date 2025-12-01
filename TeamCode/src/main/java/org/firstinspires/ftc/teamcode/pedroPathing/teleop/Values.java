@@ -40,15 +40,15 @@ public final class Values {
 
     public static final class spindexerConstants {
         public static final ProfiledPIDController spindexerPIDF = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0,0));
-        public static double sP = -0.00028;
-        public static double sI = -0.12;
+        public static double sP = -0.00026;
+        public static double sI = -0.08;
         public static double sD = -0.00003;
         public static double sK = 0;
-        public static double sV =1000000;
+        public static double sV =999999999;
         public static double sA = 0;
         public static double spindexerPosition=0;
-        public static final double spindexerStart = 0, spindexerGreen=2100, spindexerPurple1=4950, spindexerPurple2=7900, spindexerGreenTransfer = 6200,spindexerPurpleTransfer1 = 800, spindexerPurpleTransfer3 = 3600; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
-        public static final double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
+        public static double spindexerStart = 0, spindexerGreen=2100+relativeSpindexOverride, spindexerPurple1=5000+relativeSpindexOverride, spindexerPurple2=7700+relativeSpindexOverride, spindexerGreenTransfer = 6200+relativeSpindexOverride,spindexerPurpleTransfer1 = 800+relativeSpindexOverride, spindexerPurpleTransfer3 = 3600+relativeSpindexOverride; //forward -> 800, 3600, 6200; transfer -> 2100, 4950, 7600
+        public static double[]indexer = new double[] {spindexerGreen,spindexerPurple1,spindexerPurple2,spindexerGreenTransfer,spindexerPurpleTransfer1,spindexerPurpleTransfer3};
         public static int index = 0;
     }
 
@@ -63,7 +63,7 @@ public final class Values {
         public static double tA = 0;
         public static double turretPosition=0;
 
-        public static double turretMin = -1100, turretStart = 0,turretMax = 1100;
+        public static double turretMin = -1060, turretStart = 0,turretMax = 1080;
     }
 
 
@@ -78,16 +78,17 @@ public final class Values {
 
     public static Mode mode = Mode.INTAKING;
 
-    // Example mechanism positions
 
-
+    //TODO:UPDATE
     public static final TreeMap<Double, Integer> lerpTable = new TreeMap<>(
             // distance, target velocity
             Map.ofEntries(
-                    Map.entry(38.386, 1500),
-                    Map.entry(64.55,1670),
-                    Map.entry(74.0316, 1770),
-                    Map.entry(84.1,1800)
+                    Map.entry(39.95,1520),
+                    Map.entry(53.3,1550),
+                    Map.entry(61.1,1640),
+                    Map.entry(70.2, 1650),
+                    Map.entry(90.2,1820),
+                    Map.entry(112.1,1970)
             )
     );
     public enum Motif {
@@ -99,8 +100,8 @@ public final class Values {
     static Motif motif = Motif.NONE;
     public static String team="blue";
     public static final double transferBeltStart = 1, transferBeltStop = 0.5, transferBeltMid = 0.8;
-    public static double transferDisengage=0.35, transferKick=0.9;
-    public static double transferEngage=0.49;
+    public static double transferDisengage=0.45, transferKick=0.9;
+    public static double transferEngage=0.6;
 
 
     public static int greenCount=0;
@@ -114,14 +115,14 @@ public final class Values {
     public static Methods.DetectedColor lastProcessedColor = Methods.DetectedColor.UNKNOWN;
     public static Methods.DetectedColor reversingColor = Methods.DetectedColor.UNKNOWN;
 
-
-    public static boolean waitingForBallToLeave = false;
     public static int lastColorFrames=0;
 
 
     public static boolean drivers=false;
+    public static double relativeSpindexOverride = 0;
 
     public static boolean init = true;
+    public static boolean turretOverride = false;
     public static int engaged = 0;
     public static boolean endgame = false;
     public static void reset(){

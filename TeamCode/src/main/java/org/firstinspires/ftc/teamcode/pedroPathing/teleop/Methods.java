@@ -168,9 +168,7 @@ public class Methods {
         UNKNOWN
     }
 
-    public double getLimelightDistance(Limelight3A ll){
-        return 0; //[some distance that is calculated]
-    }
+
     public double interpolateVelocity(double distance) {
         if (lerpTable.containsKey(distance)) return lerpTable.get(distance);
 
@@ -210,7 +208,9 @@ public class Methods {
         if (wrapped < 0) wrapped += 2200;
         wrapped -= 1100;
         return wrapped;
+
     }
+
 
     public void manualRelocalize(Follower follower){
         if (Values.team.equals("red")) {
@@ -229,37 +229,33 @@ public class Methods {
     }
 
 
-    private Pose lastGoodPose = null;
 
     public void relocalize(Limelight3A ll, Follower follower, Telemetry telemetry) {
         LLResult result = ll.getLatestResult();
         if (!result.isValid()) return;
         if (result.getFiducialResults().isEmpty()) return;
 
+        // Raw LL pose
         Pose3D botpose = result.getBotpose();
-        double llX = botpose.getPosition().x;
-        double llY = botpose.getPosition().y;
 
-        double llDeg = botpose.getOrientation().getYaw(AngleUnit.DEGREES);
-        double llRad = Math.toRadians(llDeg);
+        Pose llPosePedro = fromPose3d(botpose);
+
+        // Update LL internal orientation system
+        double llDeg = Math.toDegrees(botpose.getOrientation().getYaw(AngleUnit.RADIANS));
         ll.updateRobotOrientation(llDeg);
 
-        Pose2D llPose = new Pose2D(DistanceUnit.METER, llX, llY, AngleUnit.RADIANS, llRad);
-        Pose pedroPose = PoseConverter.pose2DToPose(llPose, InvertedFTCCoordinates.INSTANCE)
-                .getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-
+        // Current follower pose
         Pose followerPose = follower.getPose();
 
         double fx = followerPose.getX();
         double fy = followerPose.getY();
         double fth = followerPose.getHeading();
 
-        double lx = pedroPose.getX();
-        double ly = pedroPose.getY();
-        double lth = pedroPose.getHeading();
+        double lx = llPosePedro.getX();
+        double ly = llPosePedro.getY();
+        double lth = llPosePedro.getHeading();
 
-        telemetry.addData("ll pose", llPose);
-        telemetry.addData("pedro pose", pedroPose);
+        telemetry.addData("LL Pose (converted)", llPosePedro);
 
         if (Math.abs(lx - fx) > 0.20 || Math.abs(ly - fy) > 0.20) {
             telemetry.addData("dist","too noisy");
@@ -279,20 +275,47 @@ public class Methods {
         follower.setPose(fused);
     }
 
+    public String completeRelocalize(Limelight3A ll,Follower follower,Telemetry telemetry){
+        telemetry.update();
+        LLResult result = ll.getLatestResult();
+        if (!result.isValid()) {return "validity error";}
+        if (result.getFiducialResults().isEmpty()) {
+            return "fiducial error";
+            }
+
+        Pose3D botpose = result.getBotpose();
+
+        Pose llPosePedro = fromPose3d(botpose);
+
+        // Update LL internal orientation system
+        double llDeg = Math.toDegrees(botpose.getOrientation().getYaw(AngleUnit.RADIANS));
+        ll.updateRobotOrientation(llDeg);
+
+        follower.setPose(llPosePedro);
+        return "ll was here";
+
+
+    }
+
+
     private double lerpAngle(double a, double b, double t) {
         double diff = ((b - a + Math.PI) % (2*Math.PI)) - Math.PI;
         return a + diff * t;
     }
+    public static Pose fromPose3d(Pose3D original) {
+        Pose pose = new Pose(
+                toInches(original.getPosition().y) + 72,
+                -toInches(original.getPosition().x) + 72,
+                original.getOrientation().getYaw(AngleUnit.RADIANS) + Math.PI / 2
+        );
+        return pose.setHeading((pose.getHeading() + Math.PI) % (2 * Math.PI));
+    }
+    public static double toInches(double meters){
+        return meters*39.3701;
+    }
 
 
 
-
-
-    //sigma was here
-
-    //TODO: update lerp table for distance
-    //TODO: find distance using odo (easy trig)
-    //TODO: relocalize with limelight
 
 
 

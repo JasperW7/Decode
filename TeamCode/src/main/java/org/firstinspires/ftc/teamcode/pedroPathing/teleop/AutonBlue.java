@@ -10,6 +10,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -39,7 +40,45 @@ public class AutonBlue extends OpMode {
     private int pathState, actionState;
     private Timer pathTimer, actionTimer;
 
-    public static Pose startingPose = new Pose(15,112,Math.toRadians(0));
+    public static Pose startingPose = new Pose(15,114,Math.toRadians(0));
+    // ---------- RED POSES ----------
+    public static Pose startingPoseRed = new Pose(129,114,Math.toRadians(180));
+    public static Pose scorePreloadPoseRed = new Pose(104.6,107,Math.toRadians(116.6));
+    public static Pose controlScorePoseRed = new Pose(115.3,117.4);
+    public static Pose controlToFirstRed = new Pose(88.7,98);
+    public static Pose toFirstRedChainPose = new Pose(100,86,Math.toRadians(0));
+    public static Pose grabFirstPoseRed = new Pose(107,86,Math.toRadians(0));
+    public static Pose grabSecondPoseRed = new Pose(113,86,Math.toRadians(0));
+    public static Pose grabThirdPoseRed = new Pose(127,86,Math.toRadians(0));
+    public static Pose scoreFirstPoseRed = new Pose(93,100,Math.toRadians(260));
+    public static Pose toSecondStartRed = new Pose(96,96);
+    public static Pose toSecondMidRed = new Pose(76.6,80);
+    public static Pose toSecondEndRed = new Pose(98,60);
+    public static Pose grabFourthPoseRed = new Pose(107,60);
+    public static Pose grabFifthPoseRed = new Pose(113,60);
+    public static Pose grabSixthPoseRed = new Pose(120,60);
+    public static Pose scoreSecondPoseRed = new Pose(93,100);
+    public static Pose leavePoseRed = new Pose(124,72);
+
+    // ---------- BLUE POSES ----------
+    public static Pose startingPoseBlue = mirror(startingPoseRed);
+    public static Pose scorePreloadPoseBlue = mirror(scorePreloadPoseRed);
+    public static Pose controlScorePoseBlue = mirror(controlScorePoseRed);
+    public static Pose controlToFirstBlue = mirror(controlToFirstRed);
+    public static Pose toFirstBlue = mirror(toFirstRedChainPose);
+    public static Pose grabFirstPoseBlue = mirror(grabFirstPoseRed);
+    public static Pose grabSecondPoseBlue = mirror(grabSecondPoseRed);
+    public static Pose grabThirdPoseBlue = mirror(grabThirdPoseRed);
+    public static Pose scoreFirstPoseBlue = mirror(scoreFirstPoseRed);
+    public static Pose toSecondStartBlue = mirror(toSecondStartRed);
+    public static Pose toSecondMidBlue = mirror(toSecondMidRed);
+    public static Pose toSecondEndBlue = mirror(toSecondEndRed);
+    public static Pose grabFourthPoseBlue = mirror(grabFourthPoseRed);
+    public static Pose grabFifthPoseBlue = mirror(grabFifthPoseRed);
+    public static Pose grabSixthPoseBlue = mirror(grabSixthPoseRed);
+    public static Pose scoreSecondPoseBlue = mirror(scoreSecondPoseRed);
+    public static Pose leavePoseBlue = mirror(leavePoseRed);
+
     private boolean isRed = false;
     boolean caseInitialized = false;
 
@@ -51,6 +90,7 @@ public class AutonBlue extends OpMode {
     private PathChain toSecondChain;
     private PathChain scoreSecondChain;
     private PathChain leave;
+
 
     private Methods methods = new Methods();
     @Override
@@ -64,6 +104,8 @@ public class AutonBlue extends OpMode {
         robot.init();
         robot.limelight.start();
         buildPaths();
+        robot.turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         pathTimer = new Timer();
         actionTimer = new Timer();
@@ -72,131 +114,154 @@ public class AutonBlue extends OpMode {
 
     private void buildPaths() {
 
-        // -------- BLUE --------
+        // =============== BLUE AUTON ===============
+
         scorePreloadBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(15,112), new Pose(48,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(63.4))
+                .addPath(new BezierCurve(startingPoseBlue, controlScorePoseBlue, scorePreloadPoseBlue))
+                .setLinearHeadingInterpolation(
+                        startingPoseBlue.getHeading(),
+                        scorePreloadPoseBlue.getHeading())
                 .build();
 
         toFirstChainBlue = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(48,96), new Pose(42,84)))
-                .setLinearHeadingInterpolation(Math.toRadians(63.4), Math.toRadians(180))
+                .addPath(new BezierCurve(scorePreloadPoseBlue, controlToFirstBlue, toFirstBlue))
+                .setLinearHeadingInterpolation(
+                        scorePreloadPoseBlue.getHeading(),
+                        toFirstBlue.getHeading())
                 .build();
 
         grabFirstBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(42,84), new Pose(36.5,84)))
+                .addPath(new BezierLine(toFirstBlue, grabFirstPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSecondBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(36.5,84), new Pose(31.5,84)))
+                .addPath(new BezierLine(grabFirstPoseBlue, grabSecondPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabThirdBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(31.5,84), new Pose(26.5,84)))
+                .addPath(new BezierLine(grabSecondPoseBlue, grabThirdPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreFirstChainBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(26.5,84), new Pose(48,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .addPath(new BezierCurve(grabThirdPoseBlue, scoreFirstPoseBlue))
+                .setLinearHeadingInterpolation(
+                        grabThirdPoseBlue.getHeading(),
+                        scoreFirstPoseBlue.getHeading())
                 .build();
 
         toSecondChainBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(48,96), new Pose(42,60)))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .addPath(new BezierCurve(toSecondStartBlue, toSecondMidBlue, toSecondEndBlue))
+                .setLinearHeadingInterpolation(
+                        toSecondStartBlue.getHeading(),
+                        toSecondEndBlue.getHeading())
                 .build();
 
         grabFourthBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(42,60), new Pose(36.5,60)))
+                .addPath(new BezierLine(toSecondEndBlue, grabFourthPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabFifthBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(36.5,60), new Pose(31.5,60)))
+                .addPath(new BezierLine(grabFourthPoseBlue, grabFifthPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSixthBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(31.5,60), new Pose(26.5,60)))
+                .addPath(new BezierLine(grabFifthPoseBlue, grabSixthPoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreSecondChainBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(26.5,60), new Pose(48,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .addPath(new BezierLine(grabSixthPoseBlue, scoreSecondPoseBlue))
+                .setLinearHeadingInterpolation(
+                        grabSixthPoseBlue.getHeading(),
+                        scoreSecondPoseBlue.getHeading())
                 .build();
 
         leaveBlue = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(48,96), new Pose(20,72)))
+                .addPath(new BezierLine(scoreSecondPoseBlue, leavePoseBlue))
                 .setTangentHeadingInterpolation()
                 .build();
 
 
 
-        // -------- RED --------
+
+        // =============== RED AUTON ===============
+
         scorePreloadRed = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(129,112),new Pose(115.3,117.4), new Pose(104.6,107)))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(116.6))
+                .addPath(new BezierCurve(startingPoseRed, controlScorePoseRed, scorePreloadPoseRed))
+                .setLinearHeadingInterpolation(
+                        startingPoseRed.getHeading(),
+                        scorePreloadPoseRed.getHeading())
                 .build();
 
         toFirstChainRed = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(104.6,107),new Pose(88.7,98), new Pose(100,86)))
-                .setLinearHeadingInterpolation(Math.toRadians(116.6), Math.toRadians(0))
+                .addPath(new BezierCurve(scorePreloadPoseRed, controlToFirstRed, toFirstRedChainPose))
+                .setLinearHeadingInterpolation(
+                        scorePreloadPoseRed.getHeading(),
+                        toFirstRedChainPose.getHeading())
                 .build();
 
         grabFirstRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(100,86), new Pose(107,86)))
+                .addPath(new BezierLine(toFirstRedChainPose, grabFirstPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSecondRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(107,86), new Pose(113,86)))
+                .addPath(new BezierLine(grabFirstPoseRed, grabSecondPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabThirdRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(113,86), new Pose(127,86)))
+                .addPath(new BezierLine(grabSecondPoseRed, grabThirdPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreFirstChainRed = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(127,86), new Pose(96,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(260))
+                .addPath(new BezierCurve(grabThirdPoseRed, scoreFirstPoseRed))
+                .setLinearHeadingInterpolation(
+                        grabThirdPoseRed.getHeading(),
+                        scoreFirstPoseRed.getHeading())
                 .build();
 
         toSecondChainRed = follower.pathBuilder()
-                .addPath(new BezierCurve(new Pose(96,96), new Pose(76.6,80), new Pose(100,64)))
-                .setLinearHeadingInterpolation(Math.toRadians(260), Math.toRadians(0))
+                .addPath(new BezierCurve(toSecondStartRed, toSecondMidRed, toSecondEndRed))
+                .setLinearHeadingInterpolation(
+                        toSecondStartRed.getHeading(),
+                        toSecondEndRed.getHeading())
                 .build();
 
         grabFourthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(100,64), new Pose(107,64)))
+                .addPath(new BezierLine(toSecondEndRed, grabFourthPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabFifthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(107,64), new Pose(113,64)))
+                .addPath(new BezierLine(grabFourthPoseRed, grabFifthPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         grabSixthRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(113,64), new Pose(120,64)))
+                .addPath(new BezierLine(grabFifthPoseRed, grabSixthPoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
 
         scoreSecondChainRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(120,64), new Pose(96,96)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .addPath(new BezierLine(grabSixthPoseRed, scoreSecondPoseRed))
+                .setLinearHeadingInterpolation(
+                        grabSixthPoseRed.getHeading(),
+                        scoreSecondPoseRed.getHeading())
                 .build();
 
         leaveRed = follower.pathBuilder()
-                .addPath(new BezierLine(new Pose(96,96), new Pose(124,72)))
+                .addPath(new BezierLine(scoreSecondPoseRed, leavePoseRed))
                 .setTangentHeadingInterpolation()
                 .build();
-
     }
+
 
     @Override
     public void init_loop() {
@@ -252,7 +317,7 @@ public class AutonBlue extends OpMode {
         telemetry.addData("target",Values.spindexerConstants.spindexerPosition);
         telemetry.addData("curr",robot.spindexer.getCurrentPosition());
         telemetry.addData("timer",pathTimer.getElapsedTimeSeconds());
-        methods.positionPID(robot.turret,methods.turretAutoTrack(follower.getPose()),"turret");
+        methods.positionPID(robot.turret,Values.turretConstants.turretPosition,"turret");
         methods.velocityPID(robot.flywheel,Values.flywheelConstants.flywheelVelocity,"flywheel");
         methods.positionPID(robot.spindexer,Values.spindexerConstants.spindexerPosition, "spindexer");
         telemetry.update();
@@ -276,20 +341,24 @@ public class AutonBlue extends OpMode {
         switch (pathState) {
 
             case 0:
-
+                if (Values.team.equals("red")) {
+                    Values.turretConstants.turretPosition = -440;
+                }else{
+                    Values.turretConstants.turretPosition=440;
+                }
                 follower.setMaxPower(1);
                 Values.motif=getMotif(robot.limelight,telemetry);
-                switch (Values.motif) {
-                    case PPG:
-                    case PGP:
-                        //values.spindexerconstants.sa = 200000;
-                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
-                        break;
-                    case GPP:
-                        //values.spindexerconstants.sa = 200000;
-                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
-                        break;
-                }
+//                switch (Values.motif) {
+//                    case PPG:
+//                    case PGP:
+//                        Values.spindexerConstants.sA = 400000;
+//                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
+//                        break;
+//                    case GPP:
+//                        Values.spindexerConstants.sA = 400000;
+//                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
+//                        break;
+//                }
                 if (!follower.isBusy()) {
                     follower.followPath(scorePreload, true);
                     Values.flywheelConstants.flywheelVelocity = 1560;
@@ -306,17 +375,20 @@ public class AutonBlue extends OpMode {
             case 1:
             case 18:
             case 35:
-                switch (Values.motif) {
-                    case PPG:
-                    case PGP:
-                        //values.spindexerconstants.sa = 200000;
-                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
-                        break;
-                    case GPP:
-                        //values.spindexerconstants.sa = 200000;
-                        Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
-                        break;
-                }
+
+                    switch (Values.motif) {
+                        case PPG:
+                        case PGP:
+                            Values.spindexerConstants.sA = 100000;
+                            Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
+                            break;
+                        case GPP:
+                            Values.spindexerConstants.sA = 100000;
+                            ;
+                            Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
+                            break;
+                    }
+
                 if (Math.abs(robot.spindexer.getCurrentPosition() - Values.spindexerConstants.spindexerPosition) < 200)
                     nextPath();
                 break;
@@ -332,7 +404,7 @@ public class AutonBlue extends OpMode {
             case 44:
                 robot.intake.setPower(0);
                 transferBelt();
-                if (pathTimer.getElapsedTimeSeconds() > .3) nextPath();
+                if (pathTimer.getElapsedTimeSeconds() > .6) nextPath();
                 break;
 
             case 3:
@@ -344,7 +416,7 @@ public class AutonBlue extends OpMode {
             case 37:
             case 41:
             case 45:
-                if (Math.abs(Values.flywheelConstants.flywheelVelocity - robot.flywheel.getVelocity()) < 50
+                if (Math.abs(Values.flywheelConstants.flywheelVelocity - robot.flywheel.getVelocity()) < 20
                         && !follower.isBusy()) {
                     transferKick();
                     pathTimer.resetTimer();
@@ -361,8 +433,8 @@ public class AutonBlue extends OpMode {
             case 38:
             case 42:
             case 46:
-                if (pathTimer.getElapsedTimeSeconds() > .2) {
-                    transferBelt();
+                if (pathTimer.getElapsedTimeSeconds() > .5) {
+                    transferStop();
                     nextPath();
                 }
                 break;
@@ -372,15 +444,15 @@ public class AutonBlue extends OpMode {
             case 39:
                 switch (Values.motif) {
                     case PPG:
-                        //values.spindexerconstants.sa = 200000;
+                        Values.spindexerConstants.sA = 400000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple2;
                         break;
                     case PGP:
-                        //values.spindexerconstants.sa = 200000;
+                        Values.spindexerConstants.sA = 400000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                     case GPP:
-                        //values.spindexerconstants.sa = 200000;
+                        Values.spindexerConstants.sA = 400000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple1;
                         break;
                 }
@@ -393,12 +465,12 @@ public class AutonBlue extends OpMode {
             case 43:
                 switch (Values.motif) {
                     case PPG:
-                        //values.spindexerconstants.sa = 200000;
+                        Values.spindexerConstants.sA = 400000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerGreen;
                         break;
                     case PGP:
                     case GPP:
-                        //values.spindexerconstants.sa = 200000;
+                        Values.spindexerConstants.sA = 100000;
                         Values.spindexerConstants.spindexerPosition = Values.spindexerConstants.spindexerPurple2;
                         break;
                 }
@@ -413,7 +485,7 @@ public class AutonBlue extends OpMode {
                 follower.setMaxPower(1);
                 if (!caseInitialized) {
                     Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerPurpleTransfer3;
+                            Values.spindexerConstants.spindexerPurpleTransfer1;
                     follower.followPath(toFirstChain);
                     pathTimer.resetTimer();
                     caseInitialized = true;
@@ -437,14 +509,13 @@ public class AutonBlue extends OpMode {
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
-                //values.spindexerconstants.sa=200000;
+                Values.spindexerConstants.sA = 400000;
 
-                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                if (pathTimer.getElapsedTimeSeconds() > 2 &&
                         Math.abs(robot.spindexer.getCurrentPosition() -
                                 Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerPurpleTransfer1;
+
                     nextPath();
                     caseInitialized = false;
                 }
@@ -453,19 +524,20 @@ public class AutonBlue extends OpMode {
 
             case 15:
                 if (!caseInitialized) {
-                    follower.setMaxPower(0.35);
+                    follower.setMaxPower(0.6);
                     follower.followPath(grabSecondChain);
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer3;
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
-                //values.spindexerconstants.sa=200000;
+                Values.spindexerConstants.sA = 400000;
 
-                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                if (pathTimer.getElapsedTimeSeconds() > 2 &&
                         Math.abs(robot.spindexer.getCurrentPosition() -
                                 Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerGreenTransfer;
+
                     nextPath();
                     caseInitialized = false;
                 }
@@ -473,8 +545,11 @@ public class AutonBlue extends OpMode {
 
             case 16:
                 if (!caseInitialized) {
-                    follower.setMaxPower(0.35);
+                    follower.setMaxPower(1);
                     follower.followPath(grabThirdChain);
+                    Values.spindexerConstants.sA=250000;
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerGreenTransfer;
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
@@ -489,9 +564,13 @@ public class AutonBlue extends OpMode {
                 break;
 
             case 17:
-                Values.flywheelConstants.flywheelVelocity = 1600;
+                Values.flywheelConstants.flywheelVelocity = 1560;
                 follower.setMaxPower(1);
-
+                if(Values.team.equals("red")) {
+                    Values.turretConstants.turretPosition = 860;
+                }else{
+                    Values.turretConstants.turretPosition=-860;
+                }
                 if (!caseInitialized) {
                     follower.followPath(scoreFirstChain);
                     caseInitialized = true;
@@ -506,9 +585,10 @@ public class AutonBlue extends OpMode {
                 Values.flywheelConstants.flywheelVelocity = 0;
                 transferStop();
                 follower.setMaxPower(1);
+                Values.turretConstants.turretPosition=0;
                 if (!caseInitialized) {
                     Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerPurpleTransfer3;
+                            Values.spindexerConstants.spindexerPurpleTransfer1;
                     follower.followPath(toSecondChain);
                     pathTimer.resetTimer();
                     caseInitialized = true;
@@ -523,56 +603,59 @@ public class AutonBlue extends OpMode {
                 robot.intake.setPower(1);
 
                 if (!caseInitialized) {
+                    follower.setMaxPower(0.35);
                     follower.followPath(grabFourthChain);
 
-                    follower.setMaxPower(0.35);
+
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
-                //values.spindexerconstants.sa=200000;
+                Values.spindexerConstants.sA = 400000;
 
-                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                if (pathTimer.getElapsedTimeSeconds() > 2.5 &&
                         Math.abs(robot.spindexer.getCurrentPosition() -
                                 Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerGreenTransfer;
+
                     nextPath();
                     caseInitialized = false;
                 }
                 break;
             case 32:
                 if (!caseInitialized) {
-                    follower.setMaxPower(0.35);
+                    follower.setMaxPower(0.5);
                     follower.followPath(grabFifthChain);
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerPurpleTransfer3;
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
-                //values.spindexerconstants.sa=200000;
+                Values.spindexerConstants.sA = 400000;
 
-                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                if (pathTimer.getElapsedTimeSeconds() > 2.5 &&
                         Math.abs(robot.spindexer.getCurrentPosition() -
                                 Values.spindexerConstants.spindexerPosition) < 200) {
 
-                    Values.spindexerConstants.spindexerPosition =
-                            Values.spindexerConstants.spindexerPurpleTransfer1;
+
                     nextPath();
                     caseInitialized = false;
                 }
                 break;
             case 33:
                 if (!caseInitialized) {
-                    follower.setMaxPower(0.35);
+                    follower.setMaxPower(1);
                     follower.followPath(grabSixthChain);
+                    Values.spindexerConstants.sA=400000;
+                    Values.spindexerConstants.spindexerPosition =
+                            Values.spindexerConstants.spindexerGreenTransfer;
                     pathTimer.resetTimer();
                     caseInitialized = true;
                 }
 
-                if (pathTimer.getElapsedTimeSeconds() > 1.5 &&
+                if (pathTimer.getElapsedTimeSeconds() > 2 &&
                         Math.abs(robot.spindexer.getCurrentPosition() -
                                 Values.spindexerConstants.spindexerPosition) < 200) {
-
-                    nextPath();
+                    Values.spindexerConstants.spindexerPosition=0;
                     caseInitialized = false;
                 }
                 break;
@@ -713,6 +796,18 @@ public class AutonBlue extends OpMode {
 
         return Values.Motif.NONE;
     }
+    public static Pose mirror(Pose p) {
+        double x = 144 - p.getX();
+        double y = p.getY();
+        double h = p.getHeading();
+
+        if (!Double.isNaN(h)) {
+            h = Math.PI - h; // mirror the heading
+        }
+
+        return new Pose(x, y, h);
+    }
+
 }
 
 

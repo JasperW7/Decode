@@ -61,8 +61,7 @@ public class Hardware {
         spindexer.setPower(0);
 
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         turret.setDirection(DcMotorSimple.Direction.REVERSE);
         turret.setPower(0);
 
