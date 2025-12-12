@@ -1,83 +1,49 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.teleop;
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.SensorGoBildaPinpoint;
-
 public class Hardware {
-
-    public DcMotorEx flywheel;
-    public DcMotorEx intake;
-    public DcMotorEx spindexer;
-    public DcMotorEx turret;
-
-    public Servo transfer;
-    public Servo transferEngage;
-    public Servo shooterUnder;
-    public Servo ejection;
-    public Servo kickstand;
-    public Servo led;
-
-    public RevColorSensorV3 colorSensor;
-    public Limelight3A limelight;
-
-    private HardwareMap hwMap;
-
-    public  Methods.DetectedColor lastColor = Methods.DetectedColor.UNKNOWN;
+    private Limelight3A ll;
+    private DcMotorEx intake, transfer, flywheel1, flywheel2;
+    private Servo led;
+    private Servo hood1, hood2, turret1, turret2;
 
     public Hardware(HardwareMap hardwareMap) {
-        this.hwMap = hardwareMap;
-    }
-
-    public void init() {
-        flywheel = hwMap.get(DcMotorEx.class,"flywheel");
-        intake = hwMap.get(DcMotorEx.class,"intake");
-        spindexer = hwMap.get(DcMotorEx.class,"spindexer");
-        turret = hwMap.get(DcMotorEx.class,"turret");
-
-        flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        flywheel.setPower(0);
-
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        ll = hardwareMap.get(Limelight3A.class, "ll");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        transfer = hardwareMap.get(DcMotorEx.class, "transfer");
+        flywheel1 = hardwareMap.get(DcMotorEx.class, "shooter1");
+        flywheel2 = hardwareMap.get(DcMotorEx.class, "shooter2");
+        hood1 = hardwareMap.get(Servo.class, "hood1");
+        hood2 = hardwareMap.get(Servo.class, "hood2");
+        turret1 = hardwareMap.get(Servo.class, "turret1");
+        turret2 = hardwareMap.get(Servo.class, "turret2");
+        led = hardwareMap.get(Servo.class, "led");
+        ll.pipelineSwitch(1);
+        flywheel1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        flywheel1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheel1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheel1.setDirection(DcMotorEx.Direction.REVERSE);
+        flywheel1.setPower(0);
+        flywheel2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        flywheel2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheel2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheel2.setDirection(DcMotorEx.Direction.FORWARD);
+        flywheel2.setPower(0);
+        intake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotorEx.Direction.FORWARD);
         intake.setPower(0);
-
-        spindexer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        spindexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        spindexer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        spindexer.setDirection(DcMotorSimple.Direction.FORWARD);
-        spindexer.setPower(0);
-
-        turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        turret.setDirection(DcMotorSimple.Direction.REVERSE);
-        turret.setPower(0);
-
-        transfer = hwMap.get(Servo.class,"transfer");
-        transferEngage = hwMap.get(Servo.class,"engage");
-        led = hwMap.get(Servo.class,"led");
-
-        transfer.setPosition(Values.transferBeltStop);
-        transferEngage.setPosition(Values.transferDisengage);
-
-        limelight = hwMap.get(Limelight3A.class,"limelight");
-        limelight.pipelineSwitch(1);
-        limelight.setPollRateHz(100);
-        colorSensor = hwMap.get(RevColorSensorV3.class, "colorSensor");
-        colorSensor.setGain(8);
-
+        transfer.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        transfer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        transfer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        transfer.setDirection(DcMotorEx.Direction.REVERSE);
+        transfer.setPower(0);
 
     }
 }
